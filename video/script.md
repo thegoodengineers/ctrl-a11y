@@ -10,7 +10,7 @@ or the WebAIM Million 2026 report.
 | 2 | card:problem | Checkers list problems; overlays make it worse | Checkers can list these problems, but almost nobody fixes them. And the overlay widgets that claim to, often make things worse for the people they're meant to help. |
 | 3 | card:title | Ctrl+A11y and the tagline | This is Control A eleven Y. Paste a page. We fix what we can, and we prove every fix. |
 | 4 | app:paste | Paste anywhere starts a check on the demo page | Copy an address and press Control V anywhere. It opens the page in a real browser, and runs the standard accessibility check. |
-| 5 | app:result | Score card and ship card | On our broken demo page, ten problems. Eight fixed, and every one proven, because we run the same check again. Zero new problems. |
+| 5 | app:result | Score card and ship card | On our broken demo page, ten problems. All ten fixed, and every one proven, because we run the same check again. Zero new problems. |
 | 6 | app:fixes | Scroll the fixed and proven list | Each fix says where it came from. A label from the field's name. A link named from its address. Anything we can't fix honestly goes to a person. We never guess. |
 | 7 | app:reader | Screen reader view, before and after | This is what a screen reader hears. Before, just textbox. After, destination city, textbox. |
 | 8 | app:real | Hacker News result | On a real site, Hacker News, nearly two hundred and fifty problems, down to two. |

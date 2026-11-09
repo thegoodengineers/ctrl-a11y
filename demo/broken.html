@@ -1,0 +1,31 @@
+<!doctype html>
+<!-- Deliberately inaccessible demo page. Every problem here is planted on purpose. -->
+<html>
+<head><meta charset="utf-8"><style>
+  body { font-family: Arial, sans-serif; margin: 0; background: #fff; }
+  header { background: #f4f4f4; padding: 16px; display: flex; gap: 12px; align-items: center; }
+  .muted { color: #b5b5b5; }
+  .cta { background: #ffd54f; color: #fff; border: 0; padding: 10px 16px; }
+  main { padding: 16px; }
+  .icon { width: 24px; height: 24px; background: #1565c0; border: 0; color: #fff; }
+</style></head>
+<body>
+<header>
+  <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='40'><rect width='120' height='40' fill='%231565c0'/><text x='10' y='26' font-size='18' fill='white'>SkyTrips</text></svg>">
+  <button class="icon" title="Search flights">&#128269;</button>
+  <a href="/account" class="icon"><svg width="16" height="16"><circle cx="8" cy="8" r="7" fill="white"/></svg></a>
+</header>
+<main>
+  <h1>Book a flight</h1>
+  <p class="muted">Prices include all taxes and fees.</p>
+  <form>
+    <input type="text" placeholder="From city">
+    <input type="text" name="destination_city">
+    <input type="date" id="travelDate">
+    <select name="passengers"><option>1</option><option>2</option></select>
+    <button class="cta" type="submit">Search</button>
+  </form>
+  <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='120'><rect width='300' height='120' fill='%23ff9800'/><text x='20' y='70' font-size='22' fill='white'>Goa from Rs 2,999</text></svg>">
+</main>
+</body>
+</html>

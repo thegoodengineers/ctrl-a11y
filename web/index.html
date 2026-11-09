@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ctrl+A11y: paste a URL, get an accessible site</title>
+<style>
+  :root { --ink:#14171a; --muted:#4a5560; --line:#d5dbe0; --bg:#f7f8f6; --card:#fff;
+          --accent:#0a5c56; --ok:#1b6e2e; --warn:#8a4b00; --bad:#a3221a; }
+  * { box-sizing: border-box; }
+  body { margin:0; font: 16px/1.5 "Segoe UI", system-ui, sans-serif; color:var(--ink); background:var(--bg); }
+  a { color: var(--accent); }
+  :focus-visible { outline: 3px solid #e0a800; outline-offset: 2px; }
+  header, main, footer { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+  header { padding-top: 40px; }
+  h1 { font-size: 2.4rem; margin: 0 0 6px; letter-spacing: -0.02em; }
+  kbd { font: 600 0.9em ui-monospace, Consolas, monospace; border:1px solid var(--line); border-bottom-width:3px;
+        border-radius:6px; padding:1px 7px; background:var(--card); }
+  .lede { color: var(--muted); margin: 0 0 24px; max-width: 62ch; }
+  form { display:flex; gap:10px; flex-wrap:wrap; }
+  label.vh { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+  input[type=url] { flex:1 1 420px; font-size:1.05rem; padding:14px 16px; border:2px solid var(--ink); border-radius:10px; background:var(--card); }
+  button { font: 600 1rem inherit; padding:14px 22px; border:0; border-radius:10px; background:var(--accent); color:#fff; cursor:pointer; }
+  button[disabled] { opacity:.6; cursor:progress; }
+  .hint { color:var(--muted); font-size:.9rem; margin:8px 0 0; }
+  .hint button { padding:2px 8px; font-size:.9rem; background:none; color:var(--accent); text-decoration:underline; }
+  section { margin-top: 32px; }
+  .score { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:12px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; }
+  .stat b { display:block; font-size:2.4rem; line-height:1.1; }
+  .stat span { color:var(--muted); }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  th, td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; font-size:.95rem; }
+  th { background:#eef1ee; }
+  code { font: .85rem ui-monospace, Consolas, monospace; word-break: break-all; }
+  .s-verified { color:var(--ok); font-weight:700; }
+  .s-not { color:var(--warn); font-weight:700; }
+  .s-failed { color:var(--bad); font-weight:700; }
+  .reader { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+  @media (max-width: 760px) { .reader { grid-template-columns: 1fr; } }
+  pre { background:#14171a; color:#e8ece8; padding:14px; border-radius:12px; max-height:360px; overflow:auto; font-size:.82rem; margin:6px 0 0; }
+  .err { color:var(--bad); font-weight:600; }
+  footer { color:var(--muted); font-size:.85rem; padding:40px 20px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Ctrl+A11y</h1>
+  <p class="lede">Press <kbd>Ctrl</kbd>+<kbd>V</kbd> on any web page's address. We find what blocks blind, low-vision and keyboard users,
+    fix what can be fixed, and prove every fix by running the same accessibility check again.</p>
+</header>
+<main>
+  <form id="f">
+    <label class="vh" for="url">Web page address</label>
+    <input id="url" type="url" required placeholder="https://example.com" autocomplete="url">
+    <button id="go" type="submit">Fix this page</button>
+  </form>
+  <p class="hint">No page handy? <button type="button" id="demo">Try our deliberately broken demo page</button>
+    · <span id="ai"></span></p>
+  <p id="msg" role="status" aria-live="polite"></p>
+
+  <div id="out" hidden>
+    <section aria-labelledby="h-score">
+      <h2 id="h-score">Result</h2>
+      <div class="score">
+        <div class="stat"><b id="before"></b><span>problems found</span></div>
+        <div class="stat"><b id="after"></b><span>problems left after fixing</span></div>
+        <div class="stat"><b id="verified"></b><span>fixes proven by re-check</span></div>
+        <div class="stat"><b id="newp"></b><span>new problems introduced</span></div>
+      </div>
+      <p><a id="dl" href="#">Download the fixed page</a></p>
+    </section>
+    <section aria-labelledby="h-fixes">
+      <h2 id="h-fixes">Every problem, and what we did</h2>
+      <table><thead><tr><th scope="col">Status</th><th scope="col">Problem</th><th scope="col">Element</th><th scope="col">Fix or reason</th></tr></thead>
+        <tbody id="rows"></tbody></table>
+    </section>
+    <section aria-labelledby="h-reader">
+      <h2 id="h-reader">What a screen reader hears</h2>
+      <div class="reader">
+        <div><h3>Before</h3><pre id="rb" tabindex="0"></pre></div>
+        <div><h3>After</h3><pre id="ra" tabindex="0"></pre></div>
+      </div>
+    </section>
+  </div>
+</main>
+<footer>Checks run with axe-core in a real browser. A fix counts only if the same rule stops flagging the same element on the re-check.
+  Problems we cannot fix honestly are listed as "needs a person", never guessed.</footer>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+fetch("/api/status").then(r => r.json()).then(s => {
+  $("ai").textContent = s.ai ? "AI descriptions for images and icons: on" : "AI descriptions: off (set CTRL_A11Y_ANTHROPIC_API_KEY and CTRL_A11Y_MODEL to describe images)";
+});
+$("demo").onclick = () => { $("url").value = location.origin + "/demo/broken.html"; $("f").requestSubmit(); };
+$("f").onsubmit = async e => {
+  e.preventDefault();
+  $("go").disabled = true; $("out").hidden = true;
+  $("msg").className = ""; $("msg").textContent = "Opening the page in a real browser, checking, fixing and re-checking. This takes a few seconds.";
+  try {
+    const res = await fetch("/api/run", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({url: $("url").value})});
+    const r = await res.json();
+    if (!res.ok) throw new Error(r.detail || "Something went wrong");
+    $("before").textContent = r.before; $("after").textContent = r.after;
+    $("verified").textContent = r.verified; $("newp").textContent = r.new_problems.length;
+    $("dl").href = "/api/patched/" + r.patched_id;
+    const label = {verified:["s-verified","✓ Fixed and proven"], "not fixed":["s-not","Needs a person"], "failed re-check":["s-failed","✗ Fix did not hold"]};
+    $("rows").innerHTML = r.fixes.map(f => {
+      const [cls, txt] = label[f.status];
+      return `<tr><td class="${cls}">${txt}</td><td>${esc(f.help)}</td><td><code>${esc(f.html)}</code></td><td>${esc(f.change || f.why)}</td></tr>`;
+    }).join("");
+    $("rb").textContent = r.reader_before; $("ra").textContent = r.reader_after;
+    $("out").hidden = false;
+    $("msg").textContent = `Done: ${r.before} problems found, ${r.verified} fixed and proven, ${r.after} left.`;
+  } catch (err) {
+    $("msg").className = "err"; $("msg").textContent = err.message;
+  } finally { $("go").disabled = false; }
+};
+</script>
+</body>
+</html>

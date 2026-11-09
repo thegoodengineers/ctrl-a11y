@@ -1,0 +1,5 @@
+playwright==1.63.0
+fastapi==0.141.1
+uvicorn==0.52.4
+anthropic==1.15.0
+pytest

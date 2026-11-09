@@ -4,6 +4,7 @@ A fix only counts as verified if, on the re-audit, the same rule no longer flags
 Anything the engine cannot fix honestly is reported as "needs a human", never guessed.
 """
 import base64
+import re
 import os
 import pathlib
 
@@ -16,7 +17,7 @@ BLOCK_WORDS = ("access denied", "403 forbidden", "request blocked", "are you a r
                "captcha", "attention required", "just a moment")
 
 # Rules we try to fix. Everything else is reported, not touched.
-NAME_RULES = {"image-alt", "input-image-alt", "button-name", "link-name"}  # need a name from what the element shows
+NAME_RULES = {"image-alt", "input-image-alt", "button-name", "link-name", "aria-command-name"}  # need a name from what the element shows
 FIXABLE = NAME_RULES | {"label", "select-name", "html-has-lang", "document-title", "color-contrast", "frame-title",
                         "region", "landmark-one-main", "aria-required-parent", "aria-required-children",
                         "tabindex", "link-in-text-block"}
@@ -111,7 +112,9 @@ async ([rule, selector, extra]) => {
     }
     return {skip: "no honest clue to describe it; needs the vision model or a person"};
   }
-  if (rule === "button-name" || rule === "link-name") {
+  if (rule === "button-name" || rule === "link-name" || rule === "aria-command-name") {  // last: role=button/link/menuitem
+    if (/^(presentation|none)$/.test(el.getAttribute("role") || ""))
+      return {skip: "it is hidden from screen readers with role presentation; a person must decide if it should be"};
     if (extra) return set("aria-label", extra, "the vision model");
     const c = nameClue();
     if (!c) return {skip: "no honest clue to name it from; needs the vision model or a person"};
@@ -142,11 +145,19 @@ async ([rule, selector, extra]) => {
     let main = document.querySelector("main, [role=main]");
     if (!main) {
       const skip = n => /^(HEADER|NAV|FOOTER|ASIDE)$/.test(n.tagName) || /^(banner|navigation|contentinfo|complementary)$/.test(n.getAttribute("role") || "");
-      const kids = [...document.body.children].filter(n => !skip(n) && !/^(SCRIPT|STYLE|NOSCRIPT|TEMPLATE)$/.test(n.tagName));
       const h1 = document.querySelector("h1");
       const block = n => /^(DIV|SECTION|ARTICLE|FORM|TABLE|CENTER)$/.test(n.tagName);  // never a heading or inline element
-      let pick = h1 && kids.find(k => k.contains(h1) && block(k));
-      if (!pick) pick = kids.filter(block).sort((a, b) => (b.innerText || "").length - (a.innerText || "").length)[0];
+      // A main area must not swallow the page header or footer (they'd stop being landmarks), so when the best
+      // block wraps them, look one level deeper.
+      const wrapsChrome = n => n.querySelector("header, footer, [role=banner], [role=contentinfo]");
+      let parent = document.body, pick = null;
+      for (let depth = 0; depth < 6 && !pick; depth++) {
+        const kids = [...parent.children].filter(n => !skip(n) && block(n));
+        const best = (h1 && kids.find(k => k.contains(h1))) ||
+                     kids.sort((a, b) => (b.innerText || "").length - (a.innerText || "").length)[0];
+        if (!best) break;
+        if (wrapsChrome(best)) parent = best; else pick = best;
+      }
       if (!pick) return {skip: "the content isn't wrapped in a block; a person must add a <main> element"};
       pick.setAttribute("role", "main"); main = pick;
       return {attr: "role", value: "main", target: path(pick), source: "marked the block holding the page's main content as the main area"};
@@ -161,7 +172,8 @@ async ([rule, selector, extra]) => {
       if (/(^|[\s_-])(nav|navbar|navigation|menu|menubar)([\s_-]|$)/.test(nameOf)) role = "navigation";
       else if (/(^|[\s_-])(header|masthead|topbar|top|banner|site-header)([\s_-]|$)/.test(nameOf)) role = "banner";
       else if (/(^|[\s_-])(footer|site-footer|bottom)([\s_-]|$)/.test(nameOf)) role = "contentinfo";
-      if (!role || document.querySelector(`[role=${role}]`) && role !== "navigation")
+      const existing = {banner: "header, [role=banner]", contentinfo: "footer, [role=contentinfo]"}[role];  // <footer> counts too
+      if (!role || existing && document.querySelector(existing))
         return {skip: "content outside every landmark; a person must decide which landmark it belongs to"};
       top.setAttribute("role", role);
       return {attr: "role", value: role, target: path(top), source: `its block is named "${nameOf.trim()}", so marked as ${role}`};
@@ -303,12 +315,29 @@ def _describe(page, target, rule):
     return "" if text == "DECORATIVE" else (text or None)
 
 
+def _key(v):
+    """Same problem on the same element. Random ids (swiper-wrapper-e819102eb6f1...) change on every load, so they
+    are blanked out; otherwise a reload would look like a brand-new problem."""
+    return v["rule"], re.sub(r"[0-9a-f]{8,}", "#", v["target"])
+
+
+def _open(page, url):
+    """Load the page and let late content (footers, hydration) settle, so every audit sees the same page."""
+    resp = page.goto(url, wait_until="load", timeout=30000)
+    try:
+        page.wait_for_load_state("networkidle", timeout=5000)
+    except Exception:  # pages that never go quiet (live tickers) are audited as they are
+        pass
+    return resp
+
+
 def run(url, describe=True):
     """Audit, fix, re-audit. Returns before/after violations, every fix with its proof, and both screen-reader views."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        page = browser.new_page()
-        resp = page.goto(url, wait_until="load", timeout=30000)
+        # bypass_csp: strict Content-Security-Policy sites (digilocker, flipkart) otherwise refuse our injected scripts.
+        page = browser.new_page(bypass_csp=True)
+        resp = _open(page, url)
         status = resp.status if resp else None
         head = (page.title() + " " + page.evaluate("() => (document.body ? document.body.innerText : '').slice(0, 400)")).lower()
         blocked = bool(status and status >= 400) or any(w in head for w in BLOCK_WORDS)
@@ -341,33 +370,38 @@ def run(url, describe=True):
                               "change": f'{r["attr"]} = {shown}' + (f' (from {r["source"]})' if r.get("source") else "")})
 
         after = _audit(page)
-        still = {(a["rule"], a["target"]) for a in after}
+        still = {_key(a) for a in after}
         for f in fixes:
             if f["status"] == "applied":
-                f["status"] = "verified" if (f["rule"], f["target"]) not in still else "failed re-check"
-        before_keys = {(b["rule"], b["target"]) for b in before}
-        new = [a for a in after if (a["rule"], a["target"]) not in before_keys]
-
+                f["status"] = "verified" if _key(f) not in still else "failed re-check"
+        before_keys = {_key(b) for b in before}
+        new = [a for a in after if _key(a) not in before_keys]
         # Safety net: a fix must never leave the page worse. If the re-check found new problems, rebuild the page
         # from the original with fewer fixes (first without structural role changes, then with none) and re-check.
         if new:
             structural = {"region", "landmark-one-main", "aria-required-parent", "aria-required-children"}
             applied_rules = sorted({f["rule"] for f in fixes if f["status"] in ("verified", "failed re-check")},
                                    key=lambda r: (r not in structural, r))  # riskiest first
-            candidates = [{r} for r in applied_rules] + [structural, None]  # undo one kind, then all structural, then all
+            # Dynamic pages (tickers, rotating banners, random ids) differ on every load. A fresh, unfixed copy shows
+            # which problems come from the page itself; those were never ours. Then re-test with every fix on a fresh
+            # load, and only if a new problem remains, undo one kind, then all structural, then all.
+            # ponytail: one probe load; content that changes on every single load can still slip through.
+            _open(page, url)
+            before_keys |= {_key(a) for a in _audit(page)}
+            candidates = [set()] + [{r} for r in applied_rules] + [structural, None]
             first_pass = {id(f): f["status"] for f in fixes}
             for dropped in candidates:
                 keep = [f for f in fixes if first_pass[id(f)] == "verified" and dropped is not None and f["rule"] not in dropped]
-                page.goto(url, wait_until="load", timeout=30000)
+                _open(page, url)
                 if keep:
                     page.add_script_tag(content=fix_script(url, keep, only_verified=False))
                 after = _audit(page)
-                still = {(a["rule"], a["target"]) for a in after}
-                new = [a for a in after if (a["rule"], a["target"]) not in before_keys]
+                still = {_key(a) for a in after}
+                new = [a for a in after if _key(a) not in before_keys]
                 for f in fixes:
                     if first_pass[id(f)] in ("verified", "failed re-check"):
                         if f in keep:
-                            f["status"] = "verified" if (f["rule"], f["target"]) not in still else "failed re-check"
+                            f["status"] = "verified" if _key(f) not in still else "failed re-check"
                             f.pop("why", None)
                         else:
                             f["status"] = "rolled back"

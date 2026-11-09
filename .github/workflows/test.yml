@@ -1,0 +1,26 @@
+name: tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: python -m pip install -r requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - run: npm ci
+      - run: python -m pytest -q
+      - name: Our own page passes our own check
+        run: |
+          python -m uvicorn server:app --port 8765 &
+          sleep 4
+          python a11y.py http://localhost:8765/ --no-ai --max-after 0

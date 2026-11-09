@@ -1,5 +1,7 @@
 # Ctrl+A11y
 
+[![tests](https://github.com/thegoodengineers/ctrl-a11y/actions/workflows/test.yml/badge.svg)](https://github.com/thegoodengineers/ctrl-a11y/actions/workflows/test.yml)
+
 **Paste a URL, get an accessible site.** An agent finds what blocks blind, low-vision and keyboard
 users, fixes what it can, and proves every fix by running the same accessibility check again.
 
@@ -75,7 +77,7 @@ python a11y.py https://your-site.example --no-ai --max-after 0 --script ctrl-a11
 Exits with code 1 when more problems remain than you allow, and writes the proven-fix script. Example GitHub
 Actions step:
 ```yaml
-- run: pip install -r requirements.txt && python -m playwright install --with-deps chromium && npm ci
+- run: python -m pip install -r requirements.txt && python -m playwright install --with-deps chromium && npm ci
 - run: python a11y.py https://staging.your-site.example --no-ai --max-after 0
 ```
 
@@ -95,7 +97,7 @@ readers and guess. Ctrl+A11y is built the other way round:
 
 ## Run it
 ```
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 python -m playwright install chromium
 npm install
 python -m uvicorn server:app --port 8765     # open http://localhost:8765

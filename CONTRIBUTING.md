@@ -6,7 +6,7 @@ Deadline: **11 Nov 2026, 3:30 AM IST** (Devpost). Aim to be done by 10 Nov, 11 P
 ```
 git clone https://github.com/thegoodengineers/ctrl-a11y.git
 cd ctrl-a11y
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 python -m playwright install chromium
 npm install
 python -m pytest -q        # must pass before you start

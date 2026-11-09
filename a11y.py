@@ -41,20 +41,23 @@ async ([rule, selector, extra]) => {
     return parts.join(" > ") || "html";
   };
   // Where a name can honestly come from, in order of trust. Returns [name, source] or null.
-  const nameClue = () => {
-    const t = el.getAttribute("title") || el.getAttribute("value");
+  const nameClue = (node = el) => {
+    const t = node.getAttribute("title") || node.getAttribute("value");
     if (t && t.trim()) return [t.trim(), "its own title"];
-    const svgT = el.querySelector("svg title"); if (svgT && svgT.textContent.trim()) return [svgT.textContent.trim(), "its icon's title"];
-    const img = el.querySelector("img[alt]:not([alt=''])"); if (img) return [img.getAttribute("alt").trim(), "its image's description"];
-    const mat = el.querySelector(".material-icons, .material-symbols-outlined, .material-symbols-rounded");
+    const svgT = node.querySelector("svg title"); if (svgT && svgT.textContent.trim()) return [svgT.textContent.trim(), "its icon's title"];
+    const img = node.querySelector("img[alt]:not([alt=''])"); if (img) return [img.getAttribute("alt").trim(), "its image's description"];
+    const mat = node.querySelector(".material-icons, .material-symbols-outlined, .material-symbols-rounded");
     if (mat && /^[a-z_]+$/.test(mat.textContent.trim())) return [cap(human(mat.textContent.trim())), "its icon name"];
-    const cls = [el, ...el.querySelectorAll("[class]")].map(n => n.getAttribute("class") || "").join(" ");
+    const cls = [node, ...node.querySelectorAll("[class]")].map(n => n.getAttribute("class") || "").join(" ");
     const icon = cls.match(/(?:^|\s)(?:fa|fas|far|fab|bi|icon|glyphicon|mdi|ti|lni|ri)[-_]([a-z][a-z0-9-]*)/i);
     if (icon && !/^(lg|xs|sm|[0-9]x|fw|solid|regular|brands|light|duotone|spin|pulse|inverse|stack|icon)$/i.test(icon[1]))
       return [cap(human(icon[1])), "its icon class"];
-    if (el.tagName === "A" && el.getAttribute("href")) {
+    if (node.tagName === "A" && node.getAttribute("href")) {
       try {
-        const u = new URL(el.getAttribute("href"), location.href);
+        let href = node.getAttribute("href");
+        const js = href.match(/^javascript:\s*(?:window\.)?location(?:\.href)?\s*=\s*['"]([^'"]+)['"]/i);
+        if (js) href = js[1];  // an old-style link that only navigates: use where it goes
+        const u = new URL(href, location.href);
         if (!/^https?:$/.test(u.protocol)) return null;
         if (u.hostname !== location.hostname) return [u.hostname.replace(/^www\./, ""), "the link address"];
         const seg = u.pathname.split("/").filter(Boolean).pop();
@@ -69,10 +72,22 @@ async ([rule, selector, extra]) => {
   if (rule === "image-alt" || rule === "input-image-alt") {
     if (extra === "") return set("alt", "", "judged decorative by the vision model");
     if (extra) return set("alt", extra, "the vision model");
-    const w = el.naturalWidth || el.width, h = el.naturalHeight || el.height;
+    // A linked image with no text IS the link's name, so it is never decorative; WCAG says it should say where
+    // the link goes. Checked first, before any "looks decorative" rule.
+    const parentLink = el.closest("a[href]");
+    if (parentLink && !(parentLink.textContent || "").trim()) {
+      const linkClue = nameClue(parentLink);
+      if (linkClue) return set("alt", linkClue[0], "where its link goes");
+      return {skip: "the only content of a link, with no clue where it goes; needs the vision model or a person"};
+    }
+    const box = el.getBoundingClientRect();  // judge size as shown on the page, not the file's own size
+    const w = Math.round(box.width) || el.naturalWidth || el.width, h = Math.round(box.height) || el.naturalHeight || el.height;
     const file = (el.getAttribute("src") || "").split(/[?#]/)[0].split("/").pop().toLowerCase();
     if ((w && h && w <= 16 && h <= 16) || /(spacer|blank|pixel|shim|clear|transparent|border|corner|divider|dot)[^/]*\.(gif|png|jpe?g|svg|webp)$/.test(file))
       return set("alt", "", "a tiny spacer or border graphic, so marked decorative");
+    const thin = w && h && Math.min(w, h) <= 30;
+    if (thin && /(^|[_-])(end|left|right|top|bottom|bg|back|background|line|shadow|edge|corner|border|spacer|filler|cap|slice)([_.-]|$)/.test(file))
+      return set("alt", "", "a thin layout slice of the page design, so marked decorative");
     const link = el.closest("a[title], a[aria-label], button[title], button[aria-label]");
     if (link) { const t = (link.getAttribute("aria-label") || link.getAttribute("title")).trim(); if (t) return set("alt", t, "the link around it"); }
     const cap2 = el.closest("figure") && el.closest("figure").querySelector("figcaption");

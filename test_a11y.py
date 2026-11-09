@@ -39,10 +39,15 @@ def test_second_fixer_set_all_proven_and_script_reproduces():
     from playwright.sync_api import sync_playwright
     page_url = (pathlib.Path(__file__).parent / "demo/more.html").resolve().as_uri()
     r = a11y.run(page_url, describe=False)
-    assert r["before"] == 9 and r["after"] == 0 and r["verified"] == 9
+    assert r["before"] == 12 and r["after"] == 0 and r["verified"] == 12
     assert r["new_problems"] == []
     sources = {f["rule"]: f["source"] for f in r["fixes"]}
-    assert "icon class" in sources["button-name"] and "link address" in sources["link-name"]
+    assert "icon class" in sources["button-name"]
+    imgs = {f["html"]: f for f in r["fixes"] if f["rule"] == "image-alt"}
+    linked = next(f for h, f in imgs.items() if 'width="80"' in h)
+    assert linked["value"] == "example.org" and "where its link goes" in linked["source"]  # never decorative
+    thin = next(f for h, f in imgs.items() if "top_corner_left" in h)
+    assert thin["value"] == "" and "decorative" in thin["source"]
     with sync_playwright() as p:
         b = p.chromium.launch(); pg = b.new_page(); pg.goto(page_url)
         pg.add_script_tag(content=r["fix_script"]); left = a11y._audit(pg); b.close()

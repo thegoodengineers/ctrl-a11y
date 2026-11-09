@@ -1,10 +1,10 @@
-url,before,after,verified,failed_recheck,rolled_back,new_problems,error,ai,commit,run_at
-https://www.mygov.in/,196,160,36,0,1,0,,off,b91aea2,2026-11-09T14:23:24
-https://www.myscheme.gov.in/,29,14,15,0,0,0,,off,b91aea2,2026-11-09T14:23:24
-https://www.digilocker.gov.in/,55,21,34,0,0,0,,off,b91aea2,2026-11-09T14:23:24
-https://www.thehindu.com/,119,79,36,0,0,0,,off,b91aea2,2026-11-09T14:23:24
-https://www.iitb.ac.in/,17,14,3,0,0,0,,off,b91aea2,2026-11-09T14:23:24
-https://vtu.ac.in/,90,85,5,0,0,0,,off,b91aea2,2026-11-09T14:23:24
-https://www.flipkart.com/,53,47,4,0,0,0,,off,b91aea2,2026-11-09T14:23:24
-https://uidai.gov.in/,,,,,,,site served a block or error page to the browser (HTTP 500); not scored,off,b91aea2,2026-11-09T14:23:24
-https://www.ndtv.com/,,,,,,,site served a block or error page to the browser (HTTP 403); not scored,off,b91aea2,2026-11-09T14:23:24
+url,before,after,verified,resolved,failed_recheck,rolled_back,new_problems,error,ai,commit,run_at
+https://www.mygov.in/,198,162,36,8,0,1,0,,off,9511f41,2026-11-09T19:34:26
+https://www.myscheme.gov.in/,29,14,15,0,0,0,0,,off,9511f41,2026-11-09T19:34:26
+https://www.digilocker.gov.in/,55,21,34,0,0,0,0,,off,9511f41,2026-11-09T19:34:26
+https://www.thehindu.com/,121,80,37,4,0,0,0,,off,9511f41,2026-11-09T19:34:26
+https://www.iitb.ac.in/,17,14,3,0,0,0,0,,off,9511f41,2026-11-09T19:34:26
+https://vtu.ac.in/,90,85,5,0,0,0,0,,off,9511f41,2026-11-09T19:34:26
+https://www.flipkart.com/,53,50,3,5,0,1,0,,off,9511f41,2026-11-09T19:34:26
+https://uidai.gov.in/,,,,,,,,site served a block or error page to the browser (HTTP 500); not scored,off,9511f41,2026-11-09T19:34:26
+https://www.ndtv.com/,,,,,,,,site served a block or error page to the browser (HTTP 403); not scored,off,9511f41,2026-11-09T19:34:26

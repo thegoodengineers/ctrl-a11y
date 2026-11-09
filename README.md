@@ -29,16 +29,16 @@ the six we fix:
   landmarks, dropdowns, linked images and layout slices: 12 of 12 fixed and proven. Both are checked by `test_a11y.py` on every run.
 - **Real pages** (`results/bench.csv`, AI descriptions off, latest run 9 Nov 2026):
 
-  | Page | Problems before | After | Fixes proven | Did not hold | Rolled back | New problems |
-  |---|---|---|---|---|---|---|
-  | W3C inaccessible demo, home | 67 | 28 | 33 | 0 | 0 | 0 |
-  | W3C inaccessible demo, news | 52 | 25 | 27 | 0 | 0 | 0 |
-  | python.org | 112 | 2 | 77 | 0 | 0 | 0 |
-  | news.ycombinator.com | 248 | 1 | 247 | 0 | 0 | 0 |
-  | craigslist.org/about/sites | 47 | 28 | 19 | 0 | 0 | 0 |
-  | example.com | 9 | 9 | 0 | 0 | 0 | 0 |
-  | **Total, 6 pages** | **535** | **93** | **403** | **0** | **0** | **0** |
-  | india.gov.in, cbse.gov.in | site served a block or error page to the browser (HTTP 403); not scored | | | | | |
+  | Page | Problems before | After | Fixes proven | Also resolved | Did not hold | Rolled back | New problems |
+  |---|---|---|---|---|---|---|---|
+  | W3C inaccessible demo, home | 67 | 28 | 33 | 6 | 0 | 0 | 0 |
+  | W3C inaccessible demo, news | 52 | 25 | 27 | 0 | 0 | 0 | 0 |
+  | python.org | 112 | 2 | 77 | 33 | 0 | 0 | 0 |
+  | news.ycombinator.com | 247 | 1 | 246 | 0 | 0 | 0 | 0 |
+  | craigslist.org/about/sites | 47 | 28 | 19 | 0 | 0 | 0 | 0 |
+  | example.com | 9 | 9 | 0 | 0 | 0 | 0 | 0 |
+  | **Total, 6 pages** | **534** | **93** | **402** | **39** | **0** | **0** | **0** |
+  | india.gov.in, cbse.gov.in | site served a block or error page to the browser (HTTP 403); not scored | | | | | | |
 
   Honest reading: Hacker News is mostly low-contrast text. "After" can drop by more than the proven
   count, because one fix (like marking the main area) can clear several problems. example.com's text sits
@@ -50,6 +50,8 @@ the six we fix:
    its icon class"). Image descriptions and names with no honest clue on the page come from a vision AI model
    looking at the element (optional, needs a key); without it they go to a person.
 3. **Re-check:** runs axe-core again. A fix counts only if the same rule no longer flags the same element.
+   Problems that disappear because of a related fix (removing a broken `role="tree"` also repairs its list
+   items) are reported as "also resolved", proven by the same re-check.
 4. **Safety net:** if the re-check finds any new problem, the engine rebuilds the page from the original with
    fewer fixes (one kind at a time, then all structural changes, then none) until no new problem remains,
    and marks what it undid as "rolled back". A fix is never left in place if it made the page worse
@@ -109,7 +111,7 @@ python bench.py --out bench_india.csv URL... # any other set of pages -> results
 python proof.py                              # fix script alone on fresh pages -> results/fix_script_proof.csv
 python a11y.py https://example.com --no-ai   # command line
 ```
-Optional AI descriptions: set `CTRL_A11Y_ANTHROPIC_API_KEY` (an app-specific name, so the app never
+Optional AI descriptions: set `CTRL_A11Y_VISION_API_KEY` (an app-specific name, so the app never
 picks up a key by accident), and `CTRL_A11Y_MODEL` to the vision model ID. Both stay in your own environment.
 
 ## Known limits
@@ -118,5 +120,5 @@ picks up a key by accident), and `CTRL_A11Y_MODEL` to the vision model ID. Both 
 - Heading order, missing headings and content outside every landmark that isn't clearly named are listed for a person.
 - Text inside moving slideshows is listed for a person: its colours change mid-fade, so a fix can't be proven.
 - Some sites block automated browsers; we report that instead of scoring the block page.
-- Indian sites (`results/bench_india.csv`): 7 scored, 559 problems to 420, 133 fixes proven, 0 new problems.
+- Indian sites (`results/bench_india.csv`): 7 scored, 563 problems to 426, 133 fixes proven, 17 more resolved, 0 new problems.
   uidai.gov.in (HTTP 500) and ndtv.com (HTTP 403) block automated browsers.

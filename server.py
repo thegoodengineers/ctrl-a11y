@@ -54,7 +54,7 @@ def index():
 
 @app.get("/api/status")
 def status():
-    return {"ai": bool(os.environ.get("CTRL_A11Y_ANTHROPIC_API_KEY") and os.environ.get("CTRL_A11Y_MODEL"))}
+    return {"ai": bool(os.environ.get("CTRL_A11Y_VISION_API_KEY") and os.environ.get("CTRL_A11Y_MODEL"))}
 
 
 @app.post("/api/run")

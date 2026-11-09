@@ -402,7 +402,7 @@ $("f").onsubmit = async e => {
     const res = await fetch("/api/run", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({url: $("url").value})});
     const r = await res.json();
     if (!res.ok) throw new Error(r.detail || "The check could not run. Check the address and try again.");
-    const proven = r.fixes.filter(f => f.status === "verified");
+    const proven = r.fixes.filter(f => f.status === "verified" || f.status === "resolved");
     const person = r.fixes.filter(f => f.status === "not fixed");
     const failed = r.fixes.filter(f => f.status === "failed re-check" || f.status === "rolled back");
     $("shown").textContent = r.url;

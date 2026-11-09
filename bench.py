@@ -29,13 +29,13 @@ def readme_table():
     ok = [r for r in rows if not r["error"]]
     name = lambda u: NAMES.get(u, u.split("//")[1].rstrip("/").replace("www.", ""))
     tot = lambda k: sum(int(r[k]) for r in ok)
-    lines = ["  | Page | Problems before | After | Fixes proven | Did not hold | Rolled back | New problems |",
-             "  |---|---|---|---|---|---|---|"]
-    lines += [f"  | {name(r['url'])} | {r['before']} | {r['after']} | {r['verified']} | {r['failed_recheck']} | {r['rolled_back']} | {r['new_problems']} |" for r in ok]
-    lines.append(f"  | **Total, {len(ok)} pages** | **{tot('before')}** | **{tot('after')}** | **{tot('verified')}** | **{tot('failed_recheck')}** | **{tot('rolled_back')}** | **{tot('new_problems')}** |")
+    lines = ["  | Page | Problems before | After | Fixes proven | Also resolved | Did not hold | Rolled back | New problems |",
+             "  |---|---|---|---|---|---|---|---|"]
+    lines += [f"  | {name(r['url'])} | {r['before']} | {r['after']} | {r['verified']} | {r['resolved']} | {r['failed_recheck']} | {r['rolled_back']} | {r['new_problems']} |" for r in ok]
+    lines.append(f"  | **Total, {len(ok)} pages** | **{tot('before')}** | **{tot('after')}** | **{tot('verified')}** | **{tot('resolved')}** | **{tot('failed_recheck')}** | **{tot('rolled_back')}** | **{tot('new_problems')}** |")
     bad = [r for r in rows if r["error"]]
     if bad:
-        lines.append(f"  | {', '.join(name(r['url']) for r in bad)} | {bad[0]['error']} | | | | | |")
+        lines.append(f"  | {', '.join(name(r['url']) for r in bad)} | {bad[0]['error']} | | | | | | |")
     readme = pathlib.Path(__file__).parent / "README.md"
     text = readme.read_text(encoding="utf-8")
     nl = chr(10)
@@ -64,15 +64,20 @@ if __name__ == "__main__":
     rows = []
     for url in pages:
         try:
-            r = a11y.run(url, describe=False)
+            try:
+                r = a11y.run(url, describe=False)
+            except Exception as e:  # one retry for a network timeout; anything else is reported as it is
+                if "Timeout" not in str(e):
+                    raise
+                r = a11y.run(url, describe=False)
             if r["blocked"]:
                 raise RuntimeError(f"site served a block or error page to the browser (HTTP {r['http_status']}); not scored")
             row = {"url": url, "before": r["before"], "after": r["after"], "verified": r["verified"],
-                   "failed_recheck": sum(f["status"] == "failed re-check" for f in r["fixes"]),
+                   "resolved": r["resolved"], "failed_recheck": sum(f["status"] == "failed re-check" for f in r["fixes"]),
                    "rolled_back": sum(f["status"] == "rolled back" for f in r["fixes"]),
                    "new_problems": len(r["new_problems"]), "error": ""}
         except Exception as e:
-            row = {"url": url, "before": "", "after": "", "verified": "", "failed_recheck": "", "rolled_back": "", "new_problems": "",
+            row = {"url": url, "before": "", "after": "", "verified": "", "resolved": "", "failed_recheck": "", "rolled_back": "", "new_problems": "",
                    "error": str(e).splitlines()[0][:120]}
         row.update(ai="off", commit=commit, run_at=when)
         rows.append(row)
@@ -83,5 +88,5 @@ if __name__ == "__main__":
         w.writerows(rows)
     ok = [r for r in rows if not r["error"]]
     print(f"\n{len(ok)}/{len(rows)} pages audited · problems {sum(r['before'] for r in ok)} -> {sum(r['after'] for r in ok)}"
-          f" · fixes proven {sum(r['verified'] for r in ok)} · failed re-check {sum(r['failed_recheck'] for r in ok)}"
+          f" · fixes proven {sum(r['verified'] for r in ok)} · also resolved {sum(r['resolved'] for r in ok)} · failed re-check {sum(r['failed_recheck'] for r in ok)}"
           f" · new problems {sum(r['new_problems'] for r in ok)}")

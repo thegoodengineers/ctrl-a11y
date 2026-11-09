@@ -12,7 +12,7 @@ Branch: `chirag/<task>` → pull request into `main`. Run `python -m pytest -q` 
 ## What changed since this file was written (9 Nov evening)
 - ✅ Done and merged: 8 more fixers, automatic rollback, block-page detection, screen-reader bookmark, private-address
   guard, CI mode, WCAG labels, report download, Ctrl+V anywhere, screenshots, site check, SVG text and linked-image
-  descriptions, video pipeline, GitHub Actions, Devpost text rewrite. Benchmark: 535 to 93 on 6 pages and 559 to 420 on 7 Indian sites, 0 failed, 0 new.
+  descriptions, video pipeline, GitHub Actions, Devpost text rewrite. Benchmark: 534 to 93 on 6 pages and 563 to 426 on 7 Indian sites, 0 failed, 0 new.
 
 ## 1. ✅ DONE 9 Nov: fix the 3 contrast fixes that fail the re-check
 - Cause: text in python.org's rotating slideshow, measured mid-fade; the slide changed before the re-check.

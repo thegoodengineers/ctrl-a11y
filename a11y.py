@@ -347,9 +347,25 @@ def fix_script(url, fixes, only_verified=True):
 
 
 if __name__ == "__main__":
-    import json, sys
-    r = run(sys.argv[1], describe="--no-ai" not in sys.argv)
-    print(json.dumps({k: r[k] for k in ("url", "before", "after", "verified")}, indent=2))
-    for f in r["fixes"]:
-        print(f'{f["status"]:16} {f["rule"]:16} {f["target"][:40]:40} {f.get("change") or f.get("why", "")}')
-    print("new problems introduced:", len(r["new_problems"]))
+    import argparse, json, sys
+    ap = argparse.ArgumentParser(description="Check a page, fix what can be proven, re-check.")
+    ap.add_argument("url")
+    ap.add_argument("--no-ai", action="store_true", help="don't use the vision model for image and icon names")
+    ap.add_argument("--json", action="store_true", help="print the full result as JSON")
+    ap.add_argument("--max-after", type=int, default=None,
+                    help="exit with code 1 if more than this many problems remain after fixing (for CI)")
+    ap.add_argument("--script", metavar="FILE", help="also write the proven-fix script to FILE")
+    a = ap.parse_args()
+    r = run(a.url, describe=not a.no_ai)
+    if a.script:
+        pathlib.Path(a.script).write_text(r["fix_script"], encoding="utf-8")
+    if a.json:
+        print(json.dumps({k: v for k, v in r.items() if k != "patched_html"}, indent=2))
+    else:
+        print(json.dumps({k: r[k] for k in ("url", "before", "after", "verified", "blocked")}, indent=2))
+        for f in r["fixes"]:
+            print(f'{f["status"]:16} {f["rule"]:16} {f["target"][:40]:40} {f.get("change") or f.get("why", "")}')
+        print("new problems introduced:", len(r["new_problems"]))
+    if a.max_after is not None and r["after"] > a.max_after:
+        print(f"FAIL: {r['after']} problems remain, more than the allowed {a.max_after}", file=sys.stderr)
+        sys.exit(1)

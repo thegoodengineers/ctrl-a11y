@@ -30,6 +30,9 @@ fix actually worked. We wanted the Ctrl+V of accessibility: paste a page, get it
    exactly what the engine measured.
 6. You see every problem with what was done or why it needs a person, and what a screen reader hears before
    and after.
+7. People who use screen readers can add a "Fix this page" bookmark. On any hard-to-use page, it applies the
+   proven fixes immediately and announces how many it applied. On our demo page: 10 problems down to 2.
+8. Developers can run it in CI: it fails the build when more problems remain than they allow.
 
 ### How we built it
 Python, Playwright and Chromium for a real browser; axe-core 4.10.2 for checking; FastAPI for the app;
@@ -43,7 +46,7 @@ top million sites, and its six most common failures (low contrast 83.9%, missing
 missing form labels 51%, empty links 46.3%, empty buttons 30.6%, missing page language 13.5%) are exactly
 the six we fix.
 
-On our two planted demo pages: 10 problems with 7 fixed and proven, and 9 of 9 fixed and proven, with
+On our two planted demo pages: 10 problems with 8 fixed and proven, and 9 of 9 fixed and proven, with
 0 new problems. The rest need image descriptions from the vision model.
 
 On 6 real public pages with AI off: 526 problems before, 93 after, 389 fixes proven, 0 that failed the

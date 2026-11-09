@@ -18,6 +18,8 @@ Branch: `chirag/<task>` → pull request into `main`. Run `python -m pytest -q` 
   If it can't be fixed honestly, change the fixer to skip it with a clear reason instead of applying a fix that fails.
 - Done when: re-running shows 0 `failed re-check` on python.org (fixed or honestly skipped), and the test passes.
 
+## 1b. ✅ DONE 9 Nov: one-line fix script (ship the proven fixes with one script tag), proven on real pages
+
 ## 2. Review and merge everyone's pull requests (ongoing, until 9:00 PM on 10 Nov)
 - Check each PR runs `python -m pytest -q` green and doesn't put any number in docs that isn't in `results/`.
 

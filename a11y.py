@@ -162,7 +162,8 @@ def run(url, describe=True):
             if "skip" in r:
                 fixes.append({**v, "status": "not fixed", "why": r["skip"]})
             else:
-                fixes.append({**v, "status": "applied", "change": f'{r["attr"]} = "{r["value"]}"'})
+                fixes.append({**v, "status": "applied", "attr": r["attr"], "value": r["value"],
+                              "change": f'{r["attr"]} = "{r["value"]}"'})
 
         after = _audit(page)
         still = {(a["rule"], a["target"]) for a in after}
@@ -181,9 +182,31 @@ def run(url, describe=True):
             "reader_before": reader_before,
             "reader_after": page.locator("body").aria_snapshot(),
             "patched_html": page.content(),
+            "fix_script": fix_script(url, fixes),
         }
         browser.close()
         return result
+
+
+def fix_script(url, fixes):
+    """One script a site owner adds to the page to apply every PROVEN fix. Unproven fixes are left out."""
+    import json
+    proven = [[f["target"], f["attr"], f["value"]] for f in fixes if f["status"] == "verified"]
+    return (f"/* Ctrl+A11y fixes for {url}: {len(proven)} fixes, each proven by re-check. "
+            f"Add before </body>: <script src=\"ctrl-a11y-fixes.js\"></script> */\n"
+            "(function () {\n"
+            f"  var fixes = {json.dumps(proven, ensure_ascii=False)};\n"
+            "  function apply() {\n"
+            "    fixes.forEach(function (f) {\n"
+            "      var el = document.querySelector(f[0]);\n"
+            "      if (!el) return;\n"
+            "      if (f[1] === 'title' && el === document.documentElement) document.title = f[2];\n"
+            "      else if (f[1] === 'style.color') el.style.setProperty('color', f[2], 'important');\n"
+            "      else el.setAttribute(f[1], f[2]);\n"
+            "    });\n"
+            "  }\n"
+            "  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply); else apply();\n"
+            "})();\n")
 
 
 if __name__ == "__main__":

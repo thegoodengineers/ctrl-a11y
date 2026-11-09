@@ -11,9 +11,15 @@ from playwright.sync_api import sync_playwright
 
 AXE = (pathlib.Path(__file__).parent / "node_modules/axe-core/axe.min.js").read_text(encoding="utf-8")
 
+# Pages that are really a bot-block or error page, not the site. We report these, never score them.
+BLOCK_WORDS = ("access denied", "403 forbidden", "request blocked", "are you a robot", "verify you are human",
+               "captcha", "attention required", "just a moment")
+
 # Rules we try to fix. Everything else is reported, not touched.
 NAME_RULES = {"image-alt", "input-image-alt", "button-name", "link-name"}  # need a name from what the element shows
-FIXABLE = NAME_RULES | {"label", "select-name", "html-has-lang", "document-title", "color-contrast", "frame-title"}
+FIXABLE = NAME_RULES | {"label", "select-name", "html-has-lang", "document-title", "color-contrast", "frame-title",
+                        "region", "landmark-one-main", "aria-required-parent", "aria-required-children",
+                        "tabindex", "link-in-text-block"}
 
 # Deterministic fixers, run inside the page. Each returns {"value": ...} when it changed something,
 # or {"skip": reason} when it can't fix the element honestly.
@@ -21,22 +27,115 @@ FIX_JS = r"""
 ([rule, selector, extra]) => {
   const el = document.querySelector(selector);
   if (!el) return {skip: "element not found"};
-  const human = s => (s || "").replace(/[-_]+/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").trim();
-  const set = (attr, v) => { el.setAttribute(attr, v); return {attr, value: v}; };
+  const human = s => (s || "").replace(/[-_]+/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\s+/g, " ").trim();
+  const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
+  const set = (attr, v, source) => { el.setAttribute(attr, v); return {attr, value: v, source}; };
+  // A stable CSS path for an element we change that axe didn't point at (used by the fix script).
+  const path = n => {
+    const parts = [];
+    while (n && n.nodeType === 1 && n !== document.documentElement) {
+      if (n.id && /^[A-Za-z][\w-]*$/.test(n.id)) { parts.unshift("#" + n.id); break; }
+      let i = 1, s = n; while ((s = s.previousElementSibling)) if (s.tagName === n.tagName) i++;
+      parts.unshift(n.tagName.toLowerCase() + ":nth-of-type(" + i + ")"); n = n.parentElement;
+    }
+    return parts.join(" > ") || "html";
+  };
+  // Where a name can honestly come from, in order of trust. Returns [name, source] or null.
+  const nameClue = () => {
+    const t = el.getAttribute("title") || el.getAttribute("value");
+    if (t && t.trim()) return [t.trim(), "its own title"];
+    const svgT = el.querySelector("svg title"); if (svgT && svgT.textContent.trim()) return [svgT.textContent.trim(), "its icon's title"];
+    const img = el.querySelector("img[alt]:not([alt=''])"); if (img) return [img.getAttribute("alt").trim(), "its image's description"];
+    const mat = el.querySelector(".material-icons, .material-symbols-outlined, .material-symbols-rounded");
+    if (mat && /^[a-z_]+$/.test(mat.textContent.trim())) return [cap(human(mat.textContent.trim())), "its icon name"];
+    const cls = [el, ...el.querySelectorAll("[class]")].map(n => n.getAttribute("class") || "").join(" ");
+    const icon = cls.match(/(?:^|\s)(?:fa|fas|far|fab|bi|icon|glyphicon|mdi|ti|lni|ri)[-_]([a-z][a-z0-9-]*)/i);
+    if (icon && !/^(lg|xs|sm|[0-9]x|fw|solid|regular|brands|light|duotone|spin|pulse|inverse|stack|icon)$/i.test(icon[1]))
+      return [cap(human(icon[1])), "its icon class"];
+    if (el.tagName === "A" && el.getAttribute("href")) {
+      try {
+        const u = new URL(el.getAttribute("href"), location.href);
+        if (!/^https?:$/.test(u.protocol)) return null;
+        if (u.hostname !== location.hostname) return [u.hostname.replace(/^www\./, ""), "the link address"];
+        const seg = u.pathname.split("/").filter(Boolean).pop();
+        if (!seg) return ["Home", "the link address"];
+        const word = human(decodeURIComponent(seg).replace(/\.[a-z0-9]+$/i, ""));
+        if (/^[a-z][a-z\s]{2,}$/i.test(word)) return [cap(word), "the link address"];
+      } catch (e) { return null; }
+    }
+    return null;
+  };
 
-  if (rule === "image-alt" || rule === "input-image-alt" || rule === "button-name" || rule === "link-name") {
-    const isImg = rule === "image-alt" || rule === "input-image-alt";
-    const own = el.getAttribute("title") || el.getAttribute("value");
-    const name = extra ?? own;
-    if (isImg && name === "") return set("alt", "");  // AI judged it decorative: empty alt is the correct fix
-    if (!name) return {skip: "no visible clue to name it from"};
-    return isImg ? set("alt", name) : set("aria-label", name);
+  if (rule === "image-alt" || rule === "input-image-alt") {
+    if (extra === "") return set("alt", "", "judged decorative by the vision model");
+    if (extra) return set("alt", extra, "the vision model");
+    const w = el.naturalWidth || el.width, h = el.naturalHeight || el.height;
+    const file = (el.getAttribute("src") || "").split(/[?#]/)[0].split("/").pop().toLowerCase();
+    if ((w && h && w <= 16 && h <= 16) || /(spacer|blank|pixel|shim|clear|transparent|border|corner|divider|dot)[^/]*\.(gif|png|jpe?g|svg|webp)$/.test(file))
+      return set("alt", "", "a tiny spacer or border graphic, so marked decorative");
+    const link = el.closest("a[title], a[aria-label], button[title], button[aria-label]");
+    if (link) { const t = (link.getAttribute("aria-label") || link.getAttribute("title")).trim(); if (t) return set("alt", t, "the link around it"); }
+    const cap2 = el.closest("figure") && el.closest("figure").querySelector("figcaption");
+    if (cap2 && cap2.textContent.trim()) return set("alt", cap2.textContent.trim().slice(0, 120), "its caption");
+    if (el.getAttribute("title")) return set("alt", el.getAttribute("title").trim(), "its own title");
+    return {skip: "no honest clue to describe it; needs the vision model or a person"};
+  }
+  if (rule === "button-name" || rule === "link-name") {
+    if (extra) return set("aria-label", extra, "the vision model");
+    const c = nameClue();
+    if (!c) return {skip: "no honest clue to name it from; needs the vision model or a person"};
+    return set("aria-label", c[0], c[1]);
   }
   if (rule === "label" || rule === "select-name") {
-    const name = el.getAttribute("placeholder") || el.getAttribute("title") ||
-                 human(el.getAttribute("name")) || human(el.id);
+    let name = el.getAttribute("placeholder") || el.getAttribute("title") ||
+               human(el.getAttribute("name")) || human(el.id), source = "its placeholder, name or id";
+    if (!name && el.tagName === "SELECT" && el.options.length) {
+      const first = el.options[0].textContent.trim();
+      if (first && !/^[\d\s.,-]+$/.test(first)) { name = first.replace(/[.:…]+$/, ""); source = "its first option"; }
+    }
     if (!name) return {skip: "no placeholder, name or id to label it from"};
-    return set("aria-label", name);
+    return set("aria-label", name, source);
+  }
+  if (rule === "tabindex") return set("tabindex", "0", "positive tab order replaced so keyboard order follows the page");
+  if (rule === "link-in-text-block") {
+    el.style.setProperty("text-decoration", "underline", "important");
+    return {attr: "style.text-decoration", value: "underline", source: "links in text must not rely on colour alone"};
+  }
+  if (rule === "aria-required-parent" || rule === "aria-required-children") {
+    const role = el.getAttribute("role");
+    if (!role) return {skip: "no explicit role to remove"};
+    el.removeAttribute("role");
+    return {attr: "role", value: null, source: `role "${role}" was used without the structure it requires; no ARIA beats bad ARIA`};
+  }
+  if (rule === "region" || rule === "landmark-one-main") {
+    let main = document.querySelector("main, [role=main]");
+    if (!main) {
+      const skip = n => /^(HEADER|NAV|FOOTER|ASIDE)$/.test(n.tagName) || /^(banner|navigation|contentinfo|complementary)$/.test(n.getAttribute("role") || "");
+      const kids = [...document.body.children].filter(n => !skip(n) && !/^(SCRIPT|STYLE|NOSCRIPT|TEMPLATE)$/.test(n.tagName));
+      const h1 = document.querySelector("h1");
+      const block = n => /^(DIV|SECTION|ARTICLE|FORM|TABLE|CENTER)$/.test(n.tagName);  // never a heading or inline element
+      let pick = h1 && kids.find(k => k.contains(h1) && block(k));
+      if (!pick) pick = kids.filter(block).sort((a, b) => (b.innerText || "").length - (a.innerText || "").length)[0];
+      if (!pick) return {skip: "the content isn't wrapped in a block; a person must add a <main> element"};
+      pick.setAttribute("role", "main"); main = pick;
+      return {attr: "role", value: "main", target: path(pick), source: "marked the block holding the page's main content as the main area"};
+    }
+    if (rule === "region" && main.contains(el)) return {attr: "role", value: "main", target: path(main), source: "now inside the main area"};
+    if (rule === "region") {
+      // Content outside main: if its top-level block names itself clearly, give it that landmark.
+      let top = el; while (top.parentElement && top.parentElement !== document.body) top = top.parentElement;
+      const nameOf = ((top.id || "") + " " + (top.getAttribute("class") || "")).toLowerCase();
+      if (top.getAttribute("role")) return {skip: "inside a block that already has a role; a person must decide"};
+      let role = null;
+      if (/(^|[\s_-])(nav|navbar|navigation|menu|menubar)([\s_-]|$)/.test(nameOf)) role = "navigation";
+      else if (/(^|[\s_-])(header|masthead|topbar|top|banner|site-header)([\s_-]|$)/.test(nameOf)) role = "banner";
+      else if (/(^|[\s_-])(footer|site-footer|bottom)([\s_-]|$)/.test(nameOf)) role = "contentinfo";
+      if (!role || document.querySelector(`[role=${role}]`) && role !== "navigation")
+        return {skip: "content outside every landmark; a person must decide which landmark it belongs to"};
+      top.setAttribute("role", role);
+      return {attr: "role", value: role, target: path(top), source: `its block is named "${nameOf.trim()}", so marked as ${role}`};
+    }
+    return {skip: "content outside every landmark; a person must decide which landmark it belongs to"};
   }
   if (rule === "html-has-lang") {
     const text = document.body ? document.body.innerText : "";
@@ -140,7 +239,10 @@ def run(url, describe=True):
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
-        page.goto(url, wait_until="load", timeout=30000)
+        resp = page.goto(url, wait_until="load", timeout=30000)
+        status = resp.status if resp else None
+        head = (page.title() + " " + page.evaluate("() => (document.body ? document.body.innerText : '').slice(0, 400)")).lower()
+        blocked = bool(status and status >= 400) or any(w in head for w in BLOCK_WORDS)
         before = _audit(page)
         reader_before = page.locator("body").aria_snapshot()
 
@@ -162,8 +264,10 @@ def run(url, describe=True):
             if "skip" in r:
                 fixes.append({**v, "status": "not fixed", "why": r["skip"]})
             else:
+                shown = "removed" if r["value"] is None else f'"{r["value"]}"'
                 fixes.append({**v, "status": "applied", "attr": r["attr"], "value": r["value"],
-                              "change": f'{r["attr"]} = "{r["value"]}"'})
+                              "fix_target": r.get("target") or v["target"], "source": r.get("source", ""),
+                              "change": f'{r["attr"]} = {shown}' + (f' (from {r["source"]})' if r.get("source") else "")})
 
         after = _audit(page)
         still = {(a["rule"], a["target"]) for a in after}
@@ -173,8 +277,35 @@ def run(url, describe=True):
         before_keys = {(b["rule"], b["target"]) for b in before}
         new = [a for a in after if (a["rule"], a["target"]) not in before_keys]
 
+        # Safety net: a fix must never leave the page worse. If the re-check found new problems, rebuild the page
+        # from the original with fewer fixes (first without structural role changes, then with none) and re-check.
+        if new:
+            structural = {"region", "landmark-one-main", "aria-required-parent", "aria-required-children"}
+            applied_rules = sorted({f["rule"] for f in fixes if f["status"] in ("verified", "failed re-check")},
+                                   key=lambda r: (r not in structural, r))  # riskiest first
+            candidates = [{r} for r in applied_rules] + [structural, None]  # undo one kind, then all structural, then all
+            first_pass = {id(f): f["status"] for f in fixes}
+            for dropped in candidates:
+                keep = [f for f in fixes if first_pass[id(f)] == "verified" and dropped is not None and f["rule"] not in dropped]
+                page.goto(url, wait_until="load", timeout=30000)
+                if keep:
+                    page.add_script_tag(content=fix_script(url, keep, only_verified=False))
+                after = _audit(page)
+                still = {(a["rule"], a["target"]) for a in after}
+                new = [a for a in after if (a["rule"], a["target"]) not in before_keys]
+                for f in fixes:
+                    if first_pass[id(f)] in ("verified", "failed re-check"):
+                        if f in keep:
+                            f["status"] = "verified" if (f["rule"], f["target"]) not in still else "failed re-check"
+                            f.pop("why", None)
+                        else:
+                            f["status"] = "rolled back"
+                            f["why"] = "undone automatically: with it applied, the re-check found a new problem"
+                if not new:
+                    break
+
         result = {
-            "url": url,
+            "url": url, "http_status": status, "blocked": blocked,
             "before": len(before), "after": len(after),
             "verified": sum(f["status"] == "verified" for f in fixes),
             "new_problems": new,
@@ -188,10 +319,15 @@ def run(url, describe=True):
         return result
 
 
-def fix_script(url, fixes):
+def fix_script(url, fixes, only_verified=True):
     """One script a site owner adds to the page to apply every PROVEN fix. Unproven fixes are left out."""
     import json
-    proven = [[f["target"], f["attr"], f["value"]] for f in fixes if f["status"] == "verified"]
+    proven = []
+    for f in fixes:
+        if f["status"] == "verified" or not only_verified:
+            entry = [f.get("fix_target") or f["target"], f["attr"], f["value"]]
+            if entry not in proven:  # one landmark fix can resolve many problems; apply it once
+                proven.append(entry)
     return (f"/* Ctrl+A11y fixes for {url}: {len(proven)} fixes, each proven by re-check. "
             f"Add before </body>: <script src=\"ctrl-a11y-fixes.js\"></script> */\n"
             "(function () {\n"
@@ -201,7 +337,8 @@ def fix_script(url, fixes):
             "      var el = document.querySelector(f[0]);\n"
             "      if (!el) return;\n"
             "      if (f[1] === 'title' && el === document.documentElement) document.title = f[2];\n"
-            "      else if (f[1] === 'style.color') el.style.setProperty('color', f[2], 'important');\n"
+            "      else if (f[1].indexOf('style.') === 0) el.style.setProperty(f[1].slice(6), f[2], 'important');\n"
+            "      else if (f[2] === null) el.removeAttribute(f[1]);\n"
             "      else el.setAttribute(f[1], f[2]);\n"
             "    });\n"
             "  }\n"

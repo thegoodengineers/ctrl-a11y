@@ -54,7 +54,9 @@ the six we fix:
    (`test_a_fix_that_creates_a_new_problem_is_rolled_back`).
 5. **Ship:** a one-line fix script with only the proven fixes. Proven: on a fresh, untouched copy of the page,
    the script alone reproduces the engine's result (tests for both demo pages).
-6. **Show:** every fix in plain language, what a screen reader hears before and after, and the fixed page.
+6. **Show:** every fix in plain language with its WCAG success criterion and severity, what a screen reader
+   hears before and after, the fixed page, and a dated accessibility report (itself 0 problems on our check).
+7. **Ctrl+V anywhere:** copy an address, press Ctrl+V anywhere on the page, and the check starts.
 
 ## For people who use screen readers: fix pages as you browse
 A "Fix this page" bookmarklet: add one bookmark, open it on any hard-to-use page, and that page gets our proven

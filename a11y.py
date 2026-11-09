@@ -197,11 +197,23 @@ def _audit(page):
     page.evaluate(AXE)
     result = page.evaluate("() => axe.run(document, {resultTypes: ['violations']})")
     return [
-        {"rule": v["id"], "impact": v["impact"], "help": v["help"],
+        {"rule": v["id"], "impact": v["impact"], "help": v["help"], "help_url": v.get("helpUrl", ""),
+         "wcag": _wcag(v.get("tags", [])),
          "target": " ".join(n["target"]) if all(isinstance(t, str) for t in n["target"]) else str(n["target"]),
          "html": n["html"][:200], "data": (n.get("any") or [{}])[0].get("data")}
         for v in result["violations"] for n in v["nodes"]
     ]
+
+
+def _wcag(tags):
+    """axe tags like 'wcag143' -> WCAG success criteria like '1.4.3'. Best-practice rules have none."""
+    import re
+    out = []
+    for t in tags:
+        m = re.fullmatch(r"wcag(\d)(\d)(\d+)", t)
+        if m and ".".join(m.groups()) not in out:
+            out.append(".".join(m.groups()))
+    return out
 
 
 def _describe(page, target, rule):

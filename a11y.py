@@ -69,6 +69,14 @@ FIX_JS = r"""
     };
     const contrast = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
     if (!extra || !extra.fg || !extra.bg) return {skip: "colours not known (image or gradient background)"};
+    // Text inside a fading or rotating slideshow: colours are measured mid-fade and the slide changes before
+    // the re-check, so no fix can be proven. Say so instead of applying one.
+    const stateful = /(active|current|selected)[^\s>]*(slide|item)|(slide|item)[^\s>]*(active|current|selected)/i.test(selector);
+    let fading = false;
+    for (let a = el; a && a !== document.body; a = a.parentElement) {
+      if (parseFloat(getComputedStyle(a).opacity) < 1) { fading = true; break; }
+    }
+    if (stateful || fading) return {skip: "inside a moving slideshow; contrast can't be fixed and proven while it animates, needs a person"};
     const fg = parse(extra.fg), bg = parse(extra.bg), target = (extra.ratio || 4.5) + 0.1;
     const toward = lum(bg) > 0.18 ? [0, 0, 0] : [255, 255, 255];
     for (let t = 0; t <= 1.0001; t += 0.02) {

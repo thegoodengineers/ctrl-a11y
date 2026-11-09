@@ -1,6 +1,12 @@
 # Bhumika: web app design, our own accessibility, screenshots
 
 Deadline for the team: **11 Nov, 3:30 AM IST**. Code freeze **10 Nov, 9:00 PM IST**.
+
+## Rule for everyone: never name the AI tools we used to build this
+Do not name any AI assistant or chatbot used to build this project anywhere: commit messages, co-author lines,
+code comments, README, docs, Devpost text, screenshots or the video. No `Co-Authored-By` lines for AI tools.
+Describing the product's own feature ("a vision AI model writes image descriptions") is fine.
+Before you push: `git log --format=%B | grep -i co-authored` must print nothing.
 Branch: `bhumika/<task>` → pull request into `main`. Run `python -m pytest -q` before every push.
 
 ## 1. Polish the web app (by 10 Nov, 3:00 PM)
@@ -15,6 +21,7 @@ Branch: `bhumika/<task>` → pull request into `main`. Run `python -m pytest -q`
 ## 2. Our own page must pass our own check (by 10 Nov, 3:00 PM)
 - Start the server: `python -m uvicorn server:app --port 8765`
 - Run: `python a11y.py http://localhost:8765/ --no-ai`
+- Status 9 Nov: it already reports **0 problems**. Keep it at 0 after your design changes.
 - Done when: it reports **0 problems** on our own page. Screenshot that result; it's a great line for the video.
 
 ## 3. Screenshots for Devpost (by 10 Nov, 8:00 PM)

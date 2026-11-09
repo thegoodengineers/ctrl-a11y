@@ -18,6 +18,8 @@ python -m pytest -q        # must pass before you start
 - Every number we show judges comes from `results/bench.csv` (re-run `python bench.py`). No made-up numbers.
 - Never commit API keys. Keys go in your own environment (`CTRL_A11Y_ANTHROPIC_API_KEY`).
 - The engine reports what it can't fix as "needs a person". Keep it that way: never guess a fix.
+- **Never name any AI assistant or chatbot used to build this**: not in commits, co-author lines, comments, docs,
+  Devpost text, screenshots or the video. `git log --format=%B | grep -i co-authored` must print nothing.
 
 ## Who owns what (swap freely, keep one owner per part)
 | Part | Files | Owner |

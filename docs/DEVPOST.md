@@ -38,9 +38,10 @@ demo page result on every run, and a benchmark script measures real pages into a
 On our deliberately broken demo page: 10 problems, 7 fixed and proven, 0 new problems. The 3 left
 are images and an icon link, which need the AI step.
 
-On 8 real public pages with AI off: 536 problems before, 266 after, 270 fixes proven, 3 fixes that did
-not hold (shown as failures, not hidden), 0 new problems. Most of the gain was low-contrast text
-(241 fixes on Hacker News). On the W3C's own inaccessible demo pages the gain is small (67 to 64,
+On 8 real public pages with AI off: 536 problems before, 264 after, 267 fixes proven, 0 fixes that
+failed the re-check, 0 new problems. Most of the gain was low-contrast text (241 fixes on Hacker News).
+Text inside moving slideshows is listed for a person, because its colours change mid-fade. Our own page
+scores 0 problems on our own check. On the W3C's own inaccessible demo pages the gain is small (67 to 64,
 52 to 51), because most of their problems need a person or the AI step. [Add the AI-on numbers if we run them.]
 
 ### Challenges we ran into

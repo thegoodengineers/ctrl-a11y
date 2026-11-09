@@ -16,3 +16,14 @@ def test_demo_page_fixes_are_verified_and_honest():
     unfixed = {f["rule"] for f in r["fixes"] if f["status"] == "not fixed"}
     assert unfixed == {"image-alt", "link-name"}  # need the AI step, which is off here
     assert 'lang="en"' in r["patched_html"]
+
+
+def test_slideshow_text_is_skipped_not_failed():
+    page = (pathlib.Path(__file__).parent / "demo/carousel.html").resolve().as_uri()
+    r = a11y.run(page, describe=False)
+    by_text = {f["html"]: f for f in r["fixes"] if f["rule"] == "color-contrast"}
+    moving = next(f for h, f in by_text.items() if "Moving slide" in h)
+    still = next(f for h, f in by_text.items() if "Still text" in h)
+    assert moving["status"] == "not fixed" and "slideshow" in moving["why"]
+    assert still["status"] == "verified"
+    assert not any(f["status"] == "failed re-check" for f in r["fixes"])

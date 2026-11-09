@@ -111,7 +111,7 @@ python bench.py --out bench_india.csv URL... # any other set of pages -> results
 python proof.py                              # fix script alone on fresh pages -> results/fix_script_proof.csv
 python a11y.py https://example.com --no-ai   # command line
 ```
-Optional AI descriptions: set `CTRL_A11Y_ANTHROPIC_API_KEY` (an app-specific name, so the app never
+Optional AI descriptions: set `CTRL_A11Y_VISION_API_KEY` (an app-specific name, so the app never
 picks up a key by accident), and `CTRL_A11Y_MODEL` to the vision model ID. Both stay in your own environment.
 
 ## Known limits

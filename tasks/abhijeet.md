@@ -14,13 +14,13 @@ Branch: `abhijeet/<task>` → pull request into `main`. Run `python -m pytest -q
   their link's purpose, and SVG images use the words inside them. The demo page is now 10 of 10 fixed with AI off.
 - Where AI still matters: real photos and raster images with no clue on the page, e.g. the W3C demo home page
   (`https://www.w3.org/WAI/demos/bad/before/home.html`). Measure AI on vs off there; that is the clearest proof of its value.
-- The AI step reads `CTRL_A11Y_ANTHROPIC_API_KEY` and `CTRL_A11Y_MODEL` from your own environment only.
+- The AI step reads `CTRL_A11Y_VISION_API_KEY` and `CTRL_A11Y_MODEL` from your own environment only.
 
 ## 1. Turn the AI step on and prove it works (by 10 Nov, 12:00 PM)
 - Files: `a11y.py` (`_describe`, and the `image-alt` / `button-name` / `link-name` branch of `FIX_JS`)
-- Get an Anthropic API key from https://console.anthropic.com and set it only in your own terminal:
-  - PowerShell: `$env:CTRL_A11Y_ANTHROPIC_API_KEY = "your key"`
-  - bash: `export CTRL_A11Y_ANTHROPIC_API_KEY="your key"`
+- Get an API key for the vision model from its provider and set it only in your own terminal:
+  - PowerShell: `$env:CTRL_A11Y_VISION_API_KEY = "your key"`
+  - bash: `export CTRL_A11Y_VISION_API_KEY="your key"`
   - Also set `CTRL_A11Y_MODEL` to the vision model ID from the provider's model list (Chirag has it).
   - Never commit either, never paste the key in chat or in a file in the repo.
 - Run: `python a11y.py http://localhost:8765/demo/broken.html` (start the server first:

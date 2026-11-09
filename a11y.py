@@ -294,7 +294,7 @@ def _wcag(tags):
 
 def _describe(page, target, rule):
     """Ask the vision model for a short accessible name, from a screenshot of the element. None if unavailable."""
-    if not (os.environ.get("CTRL_A11Y_ANTHROPIC_API_KEY") and os.environ.get("CTRL_A11Y_MODEL")):
+    if not (os.environ.get("CTRL_A11Y_VISION_API_KEY") and os.environ.get("CTRL_A11Y_MODEL")):
         return None
     try:
         shot = page.locator(target).first.screenshot(timeout=3000)
@@ -305,7 +305,7 @@ def _describe(page, target, rule):
            if rule in ("image-alt", "input-image-alt") else
            "This is a button or link with no text. Reply with a 1-4 word accessible name for what it does (e.g. 'Search', 'Open menu').")
     try:
-        msg = anthropic.Anthropic(api_key=os.environ["CTRL_A11Y_ANTHROPIC_API_KEY"]).beta.messages.create(
+        msg = anthropic.Anthropic(api_key=os.environ["CTRL_A11Y_VISION_API_KEY"]).beta.messages.create(
             model=os.environ["CTRL_A11Y_MODEL"], max_tokens=1000,
             output_config={"effort": "low"},
             betas=["server-side-fallback-2026-07-01"], fallbacks="default",

@@ -1,4 +1,4 @@
 url,engine_before,engine_after,fresh_page_before,fresh_page_with_script,commit,run_at
-https://news.ycombinator.com/,248,2,248,2,79e7121,2026-11-09T13:39:24
-https://www.python.org/,120,2,120,2,79e7121,2026-11-09T13:39:24
-bookmarklet on demo page,,,10,0,79e7121,2026-11-09T13:39:24
+https://news.ycombinator.com/,248,1,248,1,4aa88d7,2026-11-09T14:54:51
+https://www.python.org/,112,2,112,2,4aa88d7,2026-11-09T14:54:51
+demo/broken.html,10,1,10,1,4aa88d7,2026-11-09T14:54:51

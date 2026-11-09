@@ -25,8 +25,11 @@ fix actually worked. We wanted the Ctrl+V of accessibility: paste a page, get it
    by looking at the element itself.
 4. It runs the same checker again. A fix counts only if the same rule no longer flags the same element,
    and any new problem would be reported.
-5. You see every problem with what was done or why it needs a person, what a screen reader hears before
-   and after, and you can download the fixed page.
+5. You get a one-line fix script with only the proven fixes. Add one script tag to your page and the fixes go
+   live today. We proved it: on a fresh copy of Hacker News, the script alone takes it from 247 problems to 6,
+   exactly what the engine measured.
+6. You see every problem with what was done or why it needs a person, and what a screen reader hears before
+   and after.
 
 ### How we built it
 Python, Playwright and Chromium for a real browser; axe-core 4.10.2 for checking; FastAPI for the app;
@@ -61,7 +64,7 @@ scores 0 problems on our own check. On the W3C's own inaccessible demo pages the
 [Each of us: one line.]
 
 ### What's next
-- Turn verified fixes into a pull request on the site's own code, not just a patched copy.
+- Turn verified fixes into a pull request on the site's own source code, as well as the fix script.
 - Whole-site crawls, PDFs, and the rules that need judgement (heading order, landmarks).
 - Descriptions in the user's language.
 

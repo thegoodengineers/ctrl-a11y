@@ -68,7 +68,9 @@
         <div class="stat"><b id="verified"></b><span>fixes proven by re-check</span></div>
         <div class="stat"><b id="newp"></b><span>new problems introduced</span></div>
       </div>
-      <p><a id="dl" href="#">Download the fixed page</a></p>
+      <p><strong>Ship the fixes today:</strong> <a id="dljs" href="#" download="ctrl-a11y-fixes.js">Download the fix script</a>
+        (<span id="njs"></span> proven fixes) and add one line to your page:
+        <code>&lt;script src="ctrl-a11y-fixes.js"&gt;&lt;/script&gt;</code> · <a id="dl" href="#">Download the fixed page</a></p>
     </section>
     <section aria-labelledby="h-fixes">
       <h2 id="h-fixes">Every problem, and what we did</h2>
@@ -104,6 +106,8 @@ $("f").onsubmit = async e => {
     $("before").textContent = r.before; $("after").textContent = r.after;
     $("verified").textContent = r.verified; $("newp").textContent = r.new_problems.length;
     $("dl").href = "/api/patched/" + r.patched_id;
+    $("dljs").href = URL.createObjectURL(new Blob([r.fix_script], {type: "text/javascript"}));
+    $("njs").textContent = r.verified;
     const label = {verified:["s-verified","✓ Fixed and proven"], "not fixed":["s-not","Needs a person"], "failed re-check":["s-failed","✗ Fix did not hold"]};
     $("rows").innerHTML = r.fixes.map(f => {
       const [cls, txt] = label[f.status];

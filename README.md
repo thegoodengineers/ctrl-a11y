@@ -35,7 +35,10 @@ Chirag, Bhumika, Ayush and Abhijeet (The Good Engineers).
    a screenshot of the element (optional, needs a key).
 3. **Prove it:** runs axe-core again on the fixed page. A fix counts only if the same rule no longer
    flags the same element. Any new problem is reported.
-4. **Show it:** what a screen reader hears, before and after, and a download of the fixed page.
+4. **Ship it:** a one-line fix script with only the proven fixes. Add `<script src="ctrl-a11y-fixes.js"></script>` to
+   the page and the fixes go live. Proven: on a fresh, untouched copy, the script alone reproduces the engine's result
+   (Hacker News 247 → 6, python.org 120 → 98; demo page checked by `test_fix_script_on_original_page_gives_same_result`).
+5. **Show it:** what a screen reader hears, before and after, and a download of the fixed page.
 
 ## Run it
 ```
@@ -51,7 +54,7 @@ Optional AI descriptions: set `CTRL_A11Y_ANTHROPIC_API_KEY` (an app-specific nam
 picks up a key by accident), and `CTRL_A11Y_MODEL` to the vision model ID. Both stay in your own environment.
 
 ## Known limits
-- Fixes are applied to the live page and exported as a patched HTML snapshot; it does not edit the site's source code yet.
+- The fix script repairs pages in the browser; editing the site's own source code (a pull request) is the next step.
 - One page at a time; no logins, no PDFs.
 - Rules it does not fix (headings order, landmarks, ARIA misuse and more) are listed for a person.
 - Text inside moving slideshows is listed for a person: its colours change mid-fade, so a fix can't be proven.

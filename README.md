@@ -114,6 +114,17 @@ python a11y.py https://example.com --no-ai   # command line
 Optional AI descriptions: set `CTRL_A11Y_VISION_API_KEY` (an app-specific name, so the app never
 picks up a key by accident), and `CTRL_A11Y_MODEL` to the vision model ID. Both stay in your own environment.
 
+## Put it online (free)
+One container holds the app and a real Chromium (`Dockerfile`; CI builds it and checks it fixes the demo page).
+On Hugging Face Spaces: make a write token, then
+```
+python -m pip install huggingface_hub
+python deploy_hf.py <your-hf-name>/ctrl-a11y     # with HF_TOKEN set in your own terminal
+```
+It goes live at `https://<your-hf-name>-ctrl-a11y.hf.space` after the first build. The server allows 2 checks
+at once (`CTRL_A11Y_MAX_RUNS`); extra visitors are asked to retry instead of crashing it. Private and local
+addresses are refused, so the public demo can't be used to probe the network it runs on.
+
 ## Known limits
 - The fix script repairs pages in the browser; editing the site's own source code (a pull request) is the next step.
 - One page at a time; no logins, no PDFs.

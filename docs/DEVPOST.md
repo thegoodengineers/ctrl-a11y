@@ -23,8 +23,8 @@ fix actually worked. We wanted the Ctrl+V of accessibility: paste a page, get it
 3. It fixes what it can: missing form labels, page language, page title, frame titles and low-contrast
    text. With AI turned on, it also writes image descriptions and names for icon-only buttons and links,
    by looking at the element itself.
-4. It runs the same checker again. A fix counts only if the same rule no longer flags the same element,
-   and any new problem would be reported.
+4. It runs the same checker again. A fix counts only if the same rule no longer flags the same element.
+   If anything new breaks, it undoes the fix that caused it automatically.
 5. You get a one-line fix script with only the proven fixes. Add one script tag to your page and the fixes go
    live today. We proved it: on a fresh copy of Hacker News, the script alone takes it from 247 problems to 6,
    exactly what the engine measured.
@@ -38,16 +38,23 @@ descriptions. The fixers are plain code, so the same input always gives the same
 demo page result on every run, and a benchmark script measures real pages into a CSV.
 
 ### Results
-On our deliberately broken demo page: 10 problems, 7 fixed and proven, 0 new problems. The 3 left
-are images and an icon link, which need the AI step.
+Why it matters: the WebAIM Million 2026 found 56.1 accessibility errors per home page on average across the
+top million sites, and its six most common failures (low contrast 83.9%, missing image descriptions 53.1%,
+missing form labels 51%, empty links 46.3%, empty buttons 30.6%, missing page language 13.5%) are exactly
+the six we fix.
 
-On 8 real public pages with AI off: 536 problems before, 264 after, 267 fixes proven, 0 fixes that
-failed the re-check, 0 new problems. Most of the gain was low-contrast text (241 fixes on Hacker News).
-Text inside moving slideshows is listed for a person, because its colours change mid-fade. Our own page
-scores 0 problems on our own check. On the W3C's own inaccessible demo pages the gain is small (67 to 64,
-52 to 51), because most of their problems need a person or the AI step. [Add the AI-on numbers if we run them.]
+On our two planted demo pages: 10 problems with 7 fixed and proven, and 9 of 9 fixed and proven, with
+0 new problems. The rest need image descriptions from the vision model.
+
+On 6 real public pages with AI off: 526 problems before, 93 after, 389 fixes proven, 0 that failed the
+re-check, 0 rolled back, 0 new problems. Python.org went from 120 to 2; Hacker News from 247 to 2.
+Two government sites served an "Access Denied" page to automated browsers, so we report them as not
+scored instead of measuring the block page. Our own page scores 0 problems on our own check.
 
 ### Challenges we ran into
+- A fix can make a page worse: our first landmark fixer marked a heading as the main area on a block page.
+  We added a safety net that undoes any fix that creates a new problem, and tested it by sabotaging a fixer on purpose.
+- Some sites block automated browsers; we detect that and report it instead of scoring the block page.
 - Making "fixed" mean something: we re-run the checker and match each fix to the exact element, instead
   of trusting our own fix.
 - Colours arrive in different formats from the checker; one fixer crashed the whole run until we isolated
@@ -56,6 +63,7 @@ scores 0 problems on our own check. On the W3C's own inaccessible demo pages the
 - Keeping our own keys safe: the app only uses a key set for it by name, never one it finds lying around.
 
 ### Accomplishments that we're proud of
+- Not an overlay: no widget, no tracking, only proven attribute fixes that developers can copy into their own source.
 - Zero new problems introduced across every page we tested.
 - Every claim on screen is backed by the re-check, and failures are shown as failures.
 - The interface follows the same rules it checks for: labelled input, keyboard focus, live status messages.

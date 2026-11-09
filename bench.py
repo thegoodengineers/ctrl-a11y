@@ -28,11 +28,14 @@ if __name__ == "__main__":
     for url in pages:
         try:
             r = a11y.run(url, describe=False)
+            if r["blocked"]:
+                raise RuntimeError(f"site served a block or error page to the browser (HTTP {r['http_status']}); not scored")
             row = {"url": url, "before": r["before"], "after": r["after"], "verified": r["verified"],
                    "failed_recheck": sum(f["status"] == "failed re-check" for f in r["fixes"]),
+                   "rolled_back": sum(f["status"] == "rolled back" for f in r["fixes"]),
                    "new_problems": len(r["new_problems"]), "error": ""}
         except Exception as e:
-            row = {"url": url, "before": "", "after": "", "verified": "", "failed_recheck": "", "new_problems": "",
+            row = {"url": url, "before": "", "after": "", "verified": "", "failed_recheck": "", "rolled_back": "", "new_problems": "",
                    "error": str(e).splitlines()[0][:120]}
         row.update(ai="off", commit=commit, run_at=when)
         rows.append(row)

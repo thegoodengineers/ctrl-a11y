@@ -120,7 +120,7 @@
   .list code { grid-column: 1 / -1; font: .82rem var(--mono); color: var(--ink-2); word-break: break-all; }
   .proven .did::before { content: "Fixed: "; color: var(--proven); font-weight: 700; }
   .person .did::before { content: "Why: "; color: var(--person); font-weight: 700; }
-  .failed .did::before { content: "Did not hold: "; color: #a3221a; font-weight: 700; }
+  .failed .did::before { content: "Not kept: "; color: #a3221a; font-weight: 700; }
   @media (max-width: 640px) { .list li { grid-template-columns: 1fr; } }
 
   .reader { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 4px 24px 20px; }
@@ -211,7 +211,7 @@
         <ul class="list person" id="person" aria-labelledby="h-person"></ul>
       </div>
       <div class="panel" id="failed-wrap" hidden>
-        <h3 id="h-failed">Fix did not hold <span class="count" id="c-failed"></span></h3>
+        <h3 id="h-failed">Undone or did not hold <span class="count" id="c-failed"></span></h3>
         <ul class="list failed" id="failed" aria-labelledby="h-failed"></ul>
       </div>
       <div class="panel">
@@ -241,11 +241,20 @@ fetch("/api/status").then(r => r.json()).then(s => { aiOn = s.ai; });
 $("demo").onclick = () => { $("url").value = location.origin + "/demo/broken.html"; $("f").requestSubmit(); };
 
 const SAID = {
-  "style.color": v => `Text colour changed to ${v}`, "aria-label": v => `Label added: "${v}"`,
+  "style.color": v => `Text colour changed to ${v}`, "aria-label": v => `Name added: "${v}"`,
   "alt": v => v ? `Description added: "${v}"` : "Marked as decorative", "lang": v => `Page language set to "${v}"`,
-  "title": v => `Title set to "${v}"`,
+  "title": v => `Title set to "${v}"`, "tabindex": () => "Keyboard order fixed",
+  "style.text-decoration": () => "Link underlined so it doesn't rely on colour",
+  "role": v => v === null ? "Removed a role used without its required structure"
+             : ({main: "Marked as the main area", banner: "Marked as the page header",
+                 navigation: "Marked as navigation", contentinfo: "Marked as the page footer"}[v] || `Role set to "${v}"`),
 };
-const plain = f => f.attr ? (SAID[f.attr] || (v => `${f.attr} set to "${v}"`))(f.value) : (f.change || f.why);
+const plain = f => {
+  if (f.status === "rolled back") return f.why;
+  if (!f.attr) return f.change || f.why;
+  const said = (SAID[f.attr] || (v => `${f.attr} set to "${v}"`))(f.value);
+  return f.source ? `${said} (from ${f.source})` : said;
+};
 function items(list) {
   return list.map(f => `<li><span class="what">${esc(f.help)}</span><span class="did">${esc(plain(f))}</span><code>${esc(f.html)}</code></li>`).join("");
 }
@@ -264,7 +273,7 @@ $("f").onsubmit = async e => {
     if (!res.ok) throw new Error(r.detail || "The check could not run. Check the address and try again.");
     const proven = r.fixes.filter(f => f.status === "verified");
     const person = r.fixes.filter(f => f.status === "not fixed");
-    const failed = r.fixes.filter(f => f.status === "failed re-check");
+    const failed = r.fixes.filter(f => f.status === "failed re-check" || f.status === "rolled back");
     $("shown").textContent = r.url;
     $("big").textContent = r.verified;
     $("line").innerHTML = `<b>${r.before}</b> problems found, <b>${r.after}</b> left after fixing, <b>${r.new_problems.length}</b> new problems introduced.`;
@@ -281,7 +290,9 @@ $("f").onsubmit = async e => {
     $("ai").textContent = aiOn ? "Image and icon descriptions were written by a vision AI model and re-checked like every other fix."
                                : "Image and icon descriptions are off on this server, so images and icon-only buttons are listed for a person.";
     $("out").hidden = false;
-    $("msg").textContent = `Done. ${r.verified} fixes proven, ${r.after} problems left.`;
+    $("msg").textContent = r.blocked
+      ? `Warning: this site served a block or error page (HTTP ${r.http_status ?? "unknown"}) to our browser, so these results describe that page, not the real site.`
+      : `Done. ${r.verified} fixes proven, ${r.after} problems left.`;
     $("h-res").focus();
   } catch (err) {
     $("msg").className = "err"; $("msg").textContent = err.message;

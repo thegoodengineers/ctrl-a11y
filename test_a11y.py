@@ -28,7 +28,36 @@ def test_fix_script_on_original_page_gives_same_result():
         left = a11y._audit(page)
         b.close()
     assert len(left) == r["after"]
-    assert r["fix_script"].count('", "') >= r["verified"]  # every proven fix is in the script
+    for f in r["fixes"]:  # every proven fix's element is in the script
+        if f["status"] == "verified":
+            assert (f.get("fix_target") or f["target"]).replace('"', '\\"') in r["fix_script"]
+
+
+def test_second_fixer_set_all_proven_and_script_reproduces():
+    from playwright.sync_api import sync_playwright
+    page_url = (pathlib.Path(__file__).parent / "demo/more.html").resolve().as_uri()
+    r = a11y.run(page_url, describe=False)
+    assert r["before"] == 9 and r["after"] == 0 and r["verified"] == 9
+    assert r["new_problems"] == []
+    sources = {f["rule"]: f["source"] for f in r["fixes"]}
+    assert "icon class" in sources["button-name"] and "link address" in sources["link-name"]
+    with sync_playwright() as p:
+        b = p.chromium.launch(); pg = b.new_page(); pg.goto(page_url)
+        pg.add_script_tag(content=r["fix_script"]); left = a11y._audit(pg); b.close()
+    assert left == []
+
+
+def test_a_fix_that_creates_a_new_problem_is_rolled_back(monkeypatch):
+    """Sabotage one fixer so it writes an invalid language code. The safety net must undo it."""
+    bad = a11y.FIX_JS.replace('return set("lang", "en");', 'return set("lang", "xx-not-a-language");')
+    assert bad != a11y.FIX_JS
+    monkeypatch.setattr(a11y, "FIX_JS", bad)
+    r = a11y.run(DEMO, describe=False)
+    assert r["new_problems"] == []
+    lang = next(f for f in r["fixes"] if f["rule"] == "html-has-lang")
+    assert lang["status"] == "rolled back" and "new problem" in lang["why"]
+    assert "xx-not-a-language" not in r["fix_script"]
+    assert r["verified"] == 6  # only the bad fix is undone; the other six stay proven
 
 
 def test_slideshow_text_is_skipped_not_failed():

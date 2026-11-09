@@ -10,11 +10,11 @@ Before you push: `git log --format=%B | grep -i co-authored` must print nothing.
 Branch: `bhumika/<task>` → pull request into `main`. Run `python -m pytest -q` before every push.
 
 ## 1. Polish the web app (by 10 Nov, 3:00 PM)
-- Status 9 Nov: Chirag redesigned the page (PR "Redesign"): Atkinson Hyperlegible type, focus-yellow accent,
-  screen-reader before/after as the hero, results as one sentence, "Ship the fixes" panel, fixes grouped into
-  "Fixed and proven" / "Needs a person", changed screen-reader lines highlighted, plain-language fix text, works at 375 px.
-  Our own page and the results view both score 0 problems. Your job now: review it, improve anything that feels off,
-  and keep both at 0. The list below is what's still open.
+- Status 9 Nov: the page now follows a calm premium-fintech look (team's choice): light serif headlines (Fraunces),
+  Manrope text, a big charcoal gradient hero panel with floating glass tiles, a centred statement, rounded step cards,
+  a big proven-fixes score card next to a charcoal "Ship the fixes" card. Checked at 1280, 768 and 375 px: landing and
+  results view both score 0 problems. Your job now: review it, improve anything that feels off, keep all views at 0.
+  The list below is what's still open.
 - Files: `web/index.html` (and `server.py` only if you need a new endpoint)
 - User Experience is 10% of the score. Ideas, in order of value:
   1. A loading state while it runs (a progress line or spinner that respects reduced motion).

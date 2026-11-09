@@ -205,6 +205,32 @@ def _audit(page):
     ]
 
 
+def _shot(page):
+    """Viewport screenshot as a small JPEG data URL, for the visual before/after."""
+    try:
+        return "data:image/jpeg;base64," + base64.standard_b64encode(page.screenshot(type="jpeg", quality=55)).decode()
+    except Exception:
+        return ""
+
+
+# Up to 5 other pages on the same site, linked from this one, for the "check more of this site" step.
+SITE_LINKS_JS = r"""
+() => {
+  const seen = new Set([location.href.split("#")[0]]), out = [];
+  for (const a of document.querySelectorAll("a[href]")) {
+    let u; try { u = new URL(a.getAttribute("href"), location.href); } catch (e) { continue; }
+    if (u.origin !== location.origin || !/^https?:$/.test(u.protocol)) continue;
+    if (/\.(pdf|zip|jpe?g|png|gif|svg|mp4|mp3|docx?|xlsx?)$/i.test(u.pathname)) continue;
+    const key = u.origin + u.pathname + u.search;
+    if (seen.has(key)) continue;
+    seen.add(key); out.push(key);
+    if (out.length === 5) break;
+  }
+  return out;
+}
+"""
+
+
 def _wcag(tags):
     """axe tags like 'wcag143' -> WCAG success criteria like '1.4.3'. Best-practice rules have none."""
     import re
@@ -257,6 +283,8 @@ def run(url, describe=True):
         blocked = bool(status and status >= 400) or any(w in head for w in BLOCK_WORDS)
         before = _audit(page)
         reader_before = page.locator("body").aria_snapshot()
+        shot_before = _shot(page)
+        site_links = page.evaluate(SITE_LINKS_JS)
 
         fixes = []
         for v in before:
@@ -325,6 +353,7 @@ def run(url, describe=True):
             "reader_before": reader_before,
             "reader_after": page.locator("body").aria_snapshot(),
             "patched_html": page.content(),
+            "shot_before": shot_before, "shot_after": _shot(page), "site_links": site_links,
             "fix_script": fix_script(url, fixes),
         }
         browser.close()
@@ -372,7 +401,7 @@ if __name__ == "__main__":
     if a.script:
         pathlib.Path(a.script).write_text(r["fix_script"], encoding="utf-8")
     if a.json:
-        print(json.dumps({k: v for k, v in r.items() if k != "patched_html"}, indent=2))
+        print(json.dumps({k: v for k, v in r.items() if k not in ("patched_html", "shot_before", "shot_after")}, indent=2))
     else:
         print(json.dumps({k: r[k] for k in ("url", "before", "after", "verified", "blocked")}, indent=2))
         for f in r["fixes"]:

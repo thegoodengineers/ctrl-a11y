@@ -140,6 +140,20 @@
   .failed .did::before { content: "Not kept: "; color: #a3221a; font-weight: 700; }
   @media (max-width: 640px) { .list li { grid-template-columns: 1fr; } }
 
+  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 4px 24px 20px; }
+  @media (max-width: 760px) { .shots { grid-template-columns: 1fr; } }
+  .shots figure { margin: 0; }
+  .shots img { width: 100%; height: auto; border-radius: var(--r-md); border: 1px solid var(--line); display: block; }
+  .shots figcaption { font-weight: 600; margin-bottom: 6px; }
+  .site-intro, .site-go { margin: 0 24px 14px; color: var(--ink-2); }
+  .site-go { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  #site-msg { font-weight: 600; color: var(--ink); }
+  .site-table { padding: 0 24px 20px; overflow-x: auto; }
+  .site-table table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+  .site-table th, .site-table td { text-align: left; padding: 8px 10px; border-top: 1px solid var(--line); }
+  .site-table td:not(:first-child), .site-table tfoot td { font-variant-numeric: tabular-nums; }
+  .site-table td:first-child { word-break: break-all; }
+  .site-table tfoot th, .site-table tfoot td { font-weight: 700; border-top: 2px solid var(--char); }
   .reader { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 4px 24px 20px; }
   @media (max-width: 760px) { .reader { grid-template-columns: 1fr; } }
   .reader p { margin: 0 0 8px; font-weight: 600; }
@@ -237,6 +251,29 @@
       </div>
 
       <div class="panel">
+        <h3>See the difference</h3>
+        <div class="shots">
+          <figure><figcaption>Before</figcaption><img id="sb" alt="The page before fixing"></figure>
+          <figure><figcaption>After</figcaption><img id="sa" alt="The page after the proven fixes"></figure>
+        </div>
+      </div>
+
+      <div class="panel" id="site-wrap">
+        <h3>Check more of this site</h3>
+        <p class="site-intro" id="site-intro"></p>
+        <p class="site-go"><button type="button" class="btn" id="site-btn">Check these pages</button>
+          <span id="site-msg" role="status" aria-live="polite"></span></p>
+        <div class="site-table" id="site-table" hidden>
+          <table>
+            <caption class="vh">Results for more pages on this site</caption>
+            <thead><tr><th scope="col">Page</th><th scope="col">Found</th><th scope="col">Proven fixes</th><th scope="col">Left</th></tr></thead>
+            <tbody id="site-rows"></tbody>
+            <tfoot><tr><th scope="row">All pages checked</th><td id="t-found"></td><td id="t-proven"></td><td id="t-left"></td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
         <h3 id="h-proven">Fixed and proven <span class="count" id="c-proven"></span></h3>
         <ul class="list proven" id="proven" aria-labelledby="h-proven"></ul>
       </div>
@@ -290,6 +327,7 @@ document.addEventListener("paste", e => {
   $("f").requestSubmit();
 });
 
+$("site-btn").onclick = checkSite;
 $("demo").onclick = () => { $("url").value = location.origin + "/demo/broken.html"; $("f").requestSubmit(); };
 
 const SAID = {
@@ -313,7 +351,29 @@ function items(list) {
     `<a href="${esc(f.help_url)}" target="_blank" rel="noopener">${esc(wcagText(f))}<span class="vh"> (opens explanation in a new tab)</span></a></span></span>` +
     `<span class="did">${esc(plain(f))}</span><code>${esc(f.html)}</code></li>`).join("");
 }
-let lastResult = null;
+let lastResult = null, siteLinks = [], siteTotals = null;
+function addSiteRow(url, found, proven, left) {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `<td>${esc(url)}</td><td>${esc(found)}</td><td>${esc(proven)}</td><td>${esc(left)}</td>`;
+  $("site-rows").appendChild(tr);
+  $("t-found").textContent = siteTotals.found; $("t-proven").textContent = siteTotals.proven; $("t-left").textContent = siteTotals.left;
+}
+async function checkSite() {
+  $("site-btn").disabled = true; $("site-table").hidden = false;
+  let i = 0;
+  for (const url of siteLinks) {
+    i++; $("site-msg").textContent = `Checking page ${i} of ${siteLinks.length}...`;
+    try {
+      const res = await fetch("/api/run", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({url})});
+      const r = await res.json();
+      if (!res.ok) throw new Error(r.detail);
+      if (r.blocked) { addSiteRow(url, "blocked", "-", "-"); continue; }
+      siteTotals.found += r.before; siteTotals.proven += r.verified; siteTotals.left += r.after;
+      addSiteRow(url, r.before, r.verified, r.after);
+    } catch (e) { addSiteRow(url, "could not load", "-", "-"); }
+  }
+  $("site-msg").textContent = `Done: ${siteTotals.proven} fixes proven across ${siteLinks.length + 1} pages, ${siteTotals.left} problem${siteTotals.left === 1 ? "" : "s"} left.`;
+}
 function reportHtml(r) {
   const when = new Date().toLocaleString();
   const row = f => `<tr><td>${esc(f.status)}</td><td>${esc(f.help)}<br><small>${esc(wcagText(f))}, ${esc(f.impact || "")}</small></td>` +
@@ -351,6 +411,13 @@ $("f").onsubmit = async e => {
     $("dljs").href = URL.createObjectURL(new Blob([r.fix_script], {type: "text/javascript"}));
     $("dl").href = "/api/patched/" + r.patched_id;
     lastResult = r;
+    $("sb").src = r.shot_before || ""; $("sa").src = r.shot_after || "";
+    siteLinks = r.site_links || [];
+    $("site-wrap").hidden = siteLinks.length === 0;
+    $("site-intro").textContent = `We found ${siteLinks.length} more page${siteLinks.length === 1 ? "" : "s"} on this site linked from this one. Check ${siteLinks.length === 1 ? "it" : "them"} the same way.`;
+    $("site-table").hidden = true; $("site-rows").innerHTML = ""; $("site-msg").textContent = ""; $("site-btn").disabled = false;
+    siteTotals = {found: r.before, proven: r.verified, left: r.after};
+    addSiteRow(r.url, r.before, r.verified, r.after);
     $("report").href = URL.createObjectURL(new Blob([reportHtml(r)], {type: "text/html"}));
     $("proven").innerHTML = items(proven) || "<li>No fixes this time.</li>";
     $("person").innerHTML = items(person) || "<li>Nothing left for a person.</li>";

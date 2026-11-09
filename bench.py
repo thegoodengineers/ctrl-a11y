@@ -19,8 +19,14 @@ PAGES = [
 ]
 
 if __name__ == "__main__":
-    pages = sys.argv[1:] or PAGES
     out = pathlib.Path(__file__).parent / "results" / "bench.csv"
+    if sys.argv[1:2] == ["--site"]:
+        # Whole-site mode: the page plus up to 5 same-site pages it links to, as the app's site check does.
+        first = a11y.run(sys.argv[2], describe=False)
+        pages = [sys.argv[2]] + first["site_links"]
+        out = out.with_name("site_" + sys.argv[2].split("//")[1].split("/")[0].replace(".", "_") + ".csv")
+    else:
+        pages = sys.argv[1:] or PAGES
     out.parent.mkdir(exist_ok=True)
     commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip() or "uncommitted"
     when = datetime.datetime.now().isoformat(timespec="seconds")

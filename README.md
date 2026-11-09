@@ -106,6 +106,7 @@ python -m uvicorn server:app --port 8765     # open http://localhost:8765
 python -m pytest -q                          # 7 checks: three demo pages, fix script, safety net, server safety
 python bench.py                              # re-measure real pages -> results/bench.csv
 python bench.py --out bench_india.csv URL... # any other set of pages -> results/bench_india.csv
+python proof.py                              # fix script alone on fresh pages -> results/fix_script_proof.csv
 python a11y.py https://example.com --no-ai   # command line
 ```
 Optional AI descriptions: set `CTRL_A11Y_ANTHROPIC_API_KEY` (an app-specific name, so the app never

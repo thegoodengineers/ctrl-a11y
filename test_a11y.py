@@ -14,7 +14,9 @@ def test_demo_page_fixes_are_verified_and_honest():
     assert all(f["status"] in ("verified", "not fixed") for f in r["fixes"])  # no "failed re-check"
     assert r["after"] == r["before"] - r["verified"]
     unfixed = {f["rule"] for f in r["fixes"] if f["status"] == "not fixed"}
-    assert unfixed == {"image-alt", "link-name"}  # need the AI step, which is off here
+    assert unfixed == {"link-name"}  # a file:// page has no web address to name the icon link from
+    alts = {f["value"] for f in r["fixes"] if f["rule"] == "image-alt"}
+    assert alts == {"SkyTrips", "Goa from Rs 2,999"}  # from the text inside each SVG image
     assert 'lang="en"' in r["patched_html"]
 
 
@@ -57,7 +59,7 @@ def test_a_fix_that_creates_a_new_problem_is_rolled_back(monkeypatch):
     lang = next(f for f in r["fixes"] if f["rule"] == "html-has-lang")
     assert lang["status"] == "rolled back" and "new problem" in lang["why"]
     assert "xx-not-a-language" not in r["fix_script"]
-    assert r["verified"] == 6  # only the bad fix is undone; the other six stay proven
+    assert r["verified"] == 8  # only the bad fix is undone; the other eight stay proven
 
 
 def test_slideshow_text_is_skipped_not_failed():

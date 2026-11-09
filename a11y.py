@@ -24,7 +24,7 @@ FIXABLE = NAME_RULES | {"label", "select-name", "html-has-lang", "document-title
 # Deterministic fixers, run inside the page. Each returns {"value": ...} when it changed something,
 # or {"skip": reason} when it can't fix the element honestly.
 FIX_JS = r"""
-([rule, selector, extra]) => {
+async ([rule, selector, extra]) => {
   const el = document.querySelector(selector);
   if (!el) return {skip: "element not found"};
   const human = s => (s || "").replace(/[-_]+/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\s+/g, " ").trim();
@@ -78,6 +78,22 @@ FIX_JS = r"""
     const cap2 = el.closest("figure") && el.closest("figure").querySelector("figcaption");
     if (cap2 && cap2.textContent.trim()) return set("alt", cap2.textContent.trim().slice(0, 120), "its caption");
     if (el.getAttribute("title")) return set("alt", el.getAttribute("title").trim(), "its own title");
+    // An SVG image that contains real words (logos, banners): describe it with those words.
+    const src = el.getAttribute("src") || "";
+    if (/^data:image\/svg\+xml|\.svg(\?|#|$)/i.test(src)) {
+      try {
+        let markup;
+        if (src.startsWith("data:")) {
+          const body = src.slice(src.indexOf(",") + 1);
+          markup = /;base64,/i.test(src.slice(0, src.indexOf(",") + 1)) ? atob(body) : decodeURIComponent(body);
+        } else {
+          markup = await (await fetch(new URL(src, location.href))).text();
+        }
+        const doc = new DOMParser().parseFromString(markup, "image/svg+xml");
+        const words = [...doc.querySelectorAll("title, text")].map(n => n.textContent.trim()).filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
+        if (words.length >= 2 && /[a-z]/i.test(words)) return set("alt", words.slice(0, 150), "the text inside the image");
+      } catch (e) { /* unreadable SVG: fall through to the honest skip */ }
+    }
     return {skip: "no honest clue to describe it; needs the vision model or a person"};
   }
   if (rule === "button-name" || rule === "link-name") {

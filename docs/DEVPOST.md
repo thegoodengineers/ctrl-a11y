@@ -50,10 +50,10 @@ top million sites, and its six most common failures (low contrast 83.9%, missing
 missing form labels 51%, empty links 46.3%, empty buttons 30.6%, missing page language 13.5%) are exactly
 the six we fix.
 
-On our two planted demo pages: 10 problems with 8 fixed and proven, and 9 of 9 fixed and proven, with
-0 new problems. The rest need image descriptions from the vision model.
+On our two planted demo pages: 10 of 10 fixed and proven, and 9 of 9 fixed and proven, with
+0 new problems, and no AI model needed.
 
-On 6 real public pages with AI off: 526 problems before, 93 after, 389 fixes proven, 0 that failed the
+On 6 real public pages with AI off: 527 problems before, 93 after, 390 fixes proven, 0 that failed the
 re-check, 0 rolled back, 0 new problems. Python.org went from 120 to 2; Hacker News from 247 to 2.
 Two government sites served an "Access Denied" page to automated browsers, so we report them as not
 scored instead of measuring the block page. Our own page scores 0 problems on our own check.

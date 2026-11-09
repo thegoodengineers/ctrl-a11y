@@ -89,6 +89,20 @@
   @media (max-width: 900px) { .steps { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 520px) { .steps { grid-template-columns: 1fr; } }
 
+  /* Bookmarklet for people who use screen readers */
+  .user { margin-top: 56px; }
+  .userbox { position: relative; overflow: hidden; border-radius: var(--r-xl); padding: 40px 44px; background: var(--soft); }
+  .userbox h2 { font: 300 clamp(1.7rem, 3.2vw, 2.4rem)/1.15 var(--serif); margin: 0 0 12px; max-width: 22ch; }
+  .userbox p { max-width: 40rem; margin: 0 0 18px; color: var(--ink); }
+  .userbox .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .btn.ghost { background: transparent; color: var(--ink); border: 2px solid var(--char); padding: 10px 18px; }
+  .btn.ghost:hover { background: #e6e7ea; }
+  .userbox kbd { background: #fff; border: 1px solid var(--line); }
+  .how { margin: 0; padding-left: 1.2rem; color: var(--ink-2); max-width: 44rem; }
+  .how li { margin: 4px 0; }
+  #copied { font-weight: 600; color: var(--proven); }
+  @media (max-width: 600px) { .userbox { padding: 28px 22px; } }
+
   /* Results */
   .results { padding-block: 72px 24px; }
   .results > .wrap > h2 { font: 300 clamp(1.9rem, 3.4vw, 2.6rem)/1.15 var(--serif); margin: 0 0 6px; }
@@ -182,6 +196,22 @@
     </ol>
   </section>
 
+  <section class="wrap user" aria-labelledby="h-user">
+    <div class="userbox">
+      <h2 id="h-user">Use a screen reader? Fix pages as you browse</h2>
+      <p>Add one bookmark. On any page that's hard to use, open it: we check that page, apply only the proven fixes,
+        and your screen reader announces how many were applied. Nothing to install, nothing tracked.</p>
+      <p class="actions"><a class="btn" id="bm" href="#">Fix this page</a>
+        <button type="button" class="btn ghost" id="copybm">Copy bookmark code</button>
+        <span id="copied" role="status"></span></p>
+      <ol class="how">
+        <li>Drag "Fix this page" to your bookmarks bar, or copy the bookmark code.</li>
+        <li>If you copied it: press <kbd>Ctrl</kbd> + <kbd>D</kbd> to add a bookmark, then paste the code as its address.</li>
+        <li>On any page, open the bookmark. Some sites block outside scripts; then the page simply stays as it was.</li>
+      </ol>
+    </div>
+  </section>
+
   <section class="results" id="out" hidden aria-labelledby="h-res">
     <div class="wrap">
       <h2 id="h-res" tabindex="-1">Your result</h2>
@@ -237,6 +267,15 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 let aiOn = false;
 fetch("/api/status").then(r => r.json()).then(s => { aiOn = s.ai; });
+
+const BOOKMARK = "javascript:(function(){var s=document.createElement('script');s.src='" + location.origin +
+  "/api/fix.js?announce=1&url='+encodeURIComponent(location.href);document.body.appendChild(s);})();";
+$("bm").href = BOOKMARK;
+$("bm").onclick = e => { e.preventDefault(); $("copied").textContent = "Drag this button to your bookmarks bar, or use Copy bookmark code."; };
+$("copybm").onclick = async () => {
+  try { await navigator.clipboard.writeText(BOOKMARK); $("copied").textContent = "Copied. Now add a bookmark and paste this as its address."; }
+  catch (e) { $("copied").textContent = "Copy didn't work here. Drag the Fix this page button to your bookmarks bar instead."; }
+};
 
 $("demo").onclick = () => { $("url").value = location.origin + "/demo/broken.html"; $("f").requestSubmit(); };
 

@@ -69,3 +69,24 @@ def test_slideshow_text_is_skipped_not_failed():
     assert moving["status"] == "not fixed" and "slideshow" in moving["why"]
     assert still["status"] == "verified"
     assert not any(f["status"] == "failed re-check" for f in r["fixes"])
+
+
+def test_server_refuses_private_addresses_and_serves_live_fix_script(monkeypatch):
+    from fastapi.testclient import TestClient
+    import server
+    calls = []
+    monkeypatch.setattr(server.a11y, "run", lambda url: calls.append(url) or {"fix_script": "/* Ctrl+A11y fixes for x: 7 fixes, each proven by re-check */"})
+    server.live_cache.clear()
+    c = TestClient(server.app)
+    for bad in ["http://127.0.0.1:22/", "http://10.0.0.5/", "http://169.254.169.254/latest/meta-data/", "ftp://example.com/"]:
+        assert c.post("/api/run", json={"url": bad}).status_code == 400, bad
+    # The server's own host is allowed, so the demo pages work; the bookmarklet endpoint returns a script.
+    r = c.get("/api/fix.js", params={"url": "http://testserver/demo/broken.html"})
+    assert r.status_code == 200 and r.headers["content-type"].startswith("text/javascript")
+    assert r.headers["access-control-allow-origin"] == "*"
+    assert "proven by re-check" in r.text
+    c.get("/api/fix.js", params={"url": "http://testserver/demo/broken.html"})
+    assert calls == ["http://testserver/demo/broken.html"]  # second request served from cache
+    assert "console.warn" in c.get("/api/fix.js", params={"url": "http://10.0.0.5/"}).text  # refused, but as harmless JS
+    spoken = c.get("/api/fix.js", params={"url": "http://testserver/demo/broken.html", "announce": 1}).text
+    assert "applied \" + 7 + \" proven" in spoken.replace("COUNT", "")  # screen-reader message carries the count

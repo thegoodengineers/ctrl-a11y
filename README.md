@@ -22,8 +22,8 @@ the six we fix:
 
 ## For judges, start here
 - **Our own page:** 0 problems on our own check, landing page and results view, at 1280 and 375 px wide.
-- **Demo pages:** "Try our deliberately broken demo page" in the app: 10 problems found, 7 fixed and proven,
-  0 new. A second test page (`demo/more.html`) covers spacer images, icon buttons, icon links, tab order,
+- **Demo pages:** "Try our deliberately broken demo page" in the app: 10 problems found, 8 fixed and proven,
+  2 left (the two images, which need the vision model), 0 new. A second test page (`demo/more.html`) covers spacer images, icon buttons, icon links, tab order,
   landmarks and dropdowns: 9 of 9 fixed and proven. Both are checked by `test_a11y.py` on every run.
 - **Real pages** (`results/bench.csv`, AI descriptions off, latest run 9 Nov 2026):
 
@@ -56,6 +56,24 @@ the six we fix:
    the script alone reproduces the engine's result (tests for both demo pages).
 6. **Show:** every fix in plain language, what a screen reader hears before and after, and the fixed page.
 
+## For people who use screen readers: fix pages as you browse
+A "Fix this page" bookmarklet: add one bookmark, open it on any hard-to-use page, and that page gets our proven
+fixes immediately; the screen reader announces "Ctrl+A11y applied 8 proven accessibility fixes to this page".
+Checked end to end on the demo page: 10 problems down to 2. Keyboard and screen-reader users can copy the
+bookmark code instead of dragging. Sites with a strict content security policy block outside scripts; then the
+page simply stays as it was.
+
+## For developers: block regressions in CI
+```
+python a11y.py https://your-site.example --no-ai --max-after 0 --script ctrl-a11y-fixes.js
+```
+Exits with code 1 when more problems remain than you allow, and writes the proven-fix script. Example GitHub
+Actions step:
+```yaml
+- run: pip install -r requirements.txt && python -m playwright install --with-deps chromium && npm ci
+- run: python a11y.py https://staging.your-site.example --no-ai --max-after 0
+```
+
 ## Not an overlay
 Accessibility overlay widgets are widely criticised by blind users
 ([Overlay Fact Sheet](https://overlayfactsheet.com/en/)): they add their own toolbars, fight with screen
@@ -64,6 +82,7 @@ readers and guess. Ctrl+A11y is built the other way round:
 - Only proven fixes ship; anything that made the page worse is rolled back automatically.
 - Every fix is listed with the element and the exact change, so developers can copy it into their own source.
 - Pages that block automated browsers are reported, not scored.
+- The server only checks public addresses: private and internal network addresses are refused.
 
 ## Run it
 ```
@@ -71,7 +90,7 @@ pip install -r requirements.txt
 python -m playwright install chromium
 npm install
 python -m uvicorn server:app --port 8765     # open http://localhost:8765
-python -m pytest -q                          # 5 checks, including both demo pages and the safety net
+python -m pytest -q                          # 6 checks: both demo pages, safety net, server safety
 python bench.py                              # re-measure real pages -> results/bench.csv
 python a11y.py https://example.com --no-ai   # command line
 ```

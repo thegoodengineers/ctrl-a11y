@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ctrl+A11y video cards</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Title cards for the demo video, in the app's look. Open with ?scene=hook|problem|title|safety|close. 1280x720. */
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { width: 1280px; height: 720px; overflow: hidden; color: #fff; font-family: Manrope, sans-serif;
+         background: radial-gradient(120% 90% at 85% 110%, #4f6a55 0%, rgba(79,106,85,0) 55%), linear-gradient(160deg, #6b6e73 0%, #3a3c40 45%, #1d1e21 100%); }
+  .card { display: none; position: absolute; inset: 0; padding: 90px 110px; }
+  .card.on { display: block; }
+  h1, .big { font-family: Fraunces, Georgia, serif; font-weight: 300; letter-spacing: -0.02em; margin: 0; }
+  h1 { font-size: 76px; line-height: 1.05; max-width: 15ch; }
+  p { font-size: 30px; line-height: 1.4; color: #e6e7e9; max-width: 30ch; }
+  #close p { max-width: none; }
+  .glass { position: absolute; border-radius: 22px; border: 1px solid rgba(255,255,255,.55); backdrop-filter: blur(10px);
+           box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 24px 50px rgba(0,0,0,.3); }
+  .g1 { width: 170px; height: 170px; right: 120px; top: 90px; background: linear-gradient(145deg, rgba(150,190,255,.55), rgba(70,120,210,.25)); transform: rotate(-8deg); }
+  .g2 { width: 120px; height: 120px; right: 330px; top: 300px; background: linear-gradient(145deg, rgba(255,226,140,.6), rgba(214,160,40,.3)); transform: rotate(10deg); }
+  .g3 { width: 210px; height: 210px; right: 80px; bottom: 70px; background: linear-gradient(145deg, rgba(170,230,190,.5), rgba(60,140,90,.25)); transform: rotate(6deg); }
+  .stats { display: flex; gap: 70px; margin-top: 50px; }
+  .stat .big { font-size: 150px; line-height: 1; }
+  .stat .lbl { font-size: 28px; color: #e6e7e9; max-width: 14ch; margin-top: 10px; }
+  .src { position: absolute; left: 110px; bottom: 60px; font-size: 20px; color: #c9cbcf; }
+  .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 50px; max-width: 980px; }
+  .vs div { background: rgba(255,255,255,.08); border-radius: 22px; padding: 30px 34px; font-size: 28px; line-height: 1.4; }
+  .vs b { display: block; font-family: Fraunces, serif; font-weight: 400; font-size: 36px; margin-bottom: 10px; }
+  .mark { display: inline-grid; place-items: center; width: 64px; height: 64px; border-radius: 16px; background: #fff; color: #17181a; font-weight: 700; font-size: 20px; margin-bottom: 34px; }
+  .zero { color: #ffd84d; }
+  .in { animation: in .9s ease-out both; }
+  .in2 { animation: in .9s .5s ease-out both; }
+  .in3 { animation: in .9s 1s ease-out both; }
+  @keyframes in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+  <section class="card" id="hook">
+    <h1 class="in">The web still shuts people out</h1>
+    <div class="stats">
+      <div class="stat in2"><div class="big">53%</div><div class="lbl">of top home pages have images with no description</div></div>
+      <div class="stat in3"><div class="big">84%</div><div class="lbl">have text too faint to read</div></div>
+    </div>
+    <div class="src">WebAIM Million 2026: the home pages of the top 1,000,000 websites</div>
+  </section>
+
+  <section class="card" id="problem">
+    <h1 class="in">Listing problems isn't fixing them</h1>
+    <div class="vs">
+      <div class="in2"><b>Checkers</b>Hand you a list of problems. The page stays broken.</div>
+      <div class="in3"><b>Overlay widgets</b>Guess, add toolbars, and often fight the screen reader.</div>
+    </div>
+  </section>
+
+  <section class="card" id="title">
+    <span class="glass g1"></span><span class="glass g2"></span><span class="glass g3"></span>
+    <div class="mark in">A11y</div>
+    <h1 class="in2">Ctrl+A11y</h1>
+    <p class="in3">Paste a page. We fix what we can, and prove every fix.</p>
+  </section>
+
+  <section class="card" id="safety">
+    <h1 class="in">A fix never stays if it makes things worse</h1>
+    <div class="vs">
+      <div class="in2"><b>Automatic undo</b>Any fix that creates a new problem is rolled back and reported.</div>
+      <div class="in3"><b>We pass our own check</b><span class="zero">0</span> problems on our own app, on desktop and phone.</div>
+    </div>
+  </section>
+
+  <section class="card" id="close">
+    <span class="glass g1"></span><span class="glass g3"></span>
+    <div class="mark in">A11y</div>
+    <h1 class="in2">Every page, readable by everyone</h1>
+    <p class="in3">github.com/thegoodengineers/ctrl-a11y<br>Built by The Good Engineers</p>
+  </section>
+
+<script>
+  const id = new URLSearchParams(location.search).get("scene") || "title";
+  document.getElementById(id).classList.add("on");
+</script>
+</body>
+</html>

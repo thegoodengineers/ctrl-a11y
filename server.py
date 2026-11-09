@@ -19,6 +19,7 @@ HERE = pathlib.Path(__file__).parent
 app = FastAPI(title="Ctrl+A11y")
 app.mount("/demo", StaticFiles(directory=HERE / "demo"), name="demo")
 patched = {}  # ponytail: in-memory store, lost on restart; fine for a demo, use a disk/S3 store if hosted
+run_cache = {}  # url -> (time, full result) so a page checked in the last 10 minutes returns at once
 live_cache = {}  # url -> (time, script); ponytail: in-memory, per process; use Redis if hosted with several workers
 LIVE_TTL = 600
 
@@ -59,6 +60,9 @@ def status():
 @app.post("/api/run")
 def run(job: Job, request: Request):  # sync def: FastAPI runs it in a thread, so sync Playwright is fine
     url = check_url(job.url, request)
+    hit = run_cache.get(url)
+    if hit and time.time() - hit[0] < LIVE_TTL:
+        return {**hit[1], "cached_seconds_ago": int(time.time() - hit[0])}
     try:
         r = a11y.run(url)
     except Exception as e:
@@ -67,6 +71,7 @@ def run(job: Job, request: Request):  # sync def: FastAPI runs it in a thread, s
     patched[rid] = r.pop("patched_html")
     r["patched_id"] = rid
     live_cache[url] = (time.time(), r["fix_script"])
+    run_cache[url] = (time.time(), r)
     return r
 
 

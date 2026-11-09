@@ -33,6 +33,8 @@ fix actually worked. We wanted the Ctrl+V of accessibility: paste a page, get it
 7. People who use screen readers can add a "Fix this page" bookmark. On any hard-to-use page, it applies the
    proven fixes immediately and announces how many it applied. On our demo page: 10 problems down to 2.
 8. Developers can run it in CI: it fails the build when more problems remain than they allow.
+9. Every problem shows its WCAG success criterion and severity, and you can download a dated, printable
+   accessibility report. Copy an address and press Ctrl+V anywhere on our page to start, true to the name.
 
 ### How we built it
 Python, Playwright and Chromium for a real browser; axe-core 4.10.2 for checking; FastAPI for the app;

@@ -132,6 +132,9 @@
   .list .what { font-weight: 600; }
   .list .did { color: var(--ink); }
   .list code { grid-column: 1 / -1; font: .82rem var(--mono); color: var(--ink-2); word-break: break-all; }
+  .meta { display: block; font-weight: 400; font-size: .88rem; color: var(--ink-2); margin-top: 2px; }
+  .meta a { color: var(--ink-2); }
+  .sev-critical, .sev-serious { color: #a3221a; font-weight: 600; }
   .proven .did::before { content: "Fixed: "; color: var(--proven); font-weight: 700; }
   .person .did::before { content: "Why: "; color: var(--person); font-weight: 700; }
   .failed .did::before { content: "Not kept: "; color: #a3221a; font-weight: 700; }
@@ -173,7 +176,7 @@
         <input id="url" type="url" required placeholder="Paste a page address" autocomplete="url">
         <button class="btn go" id="go" type="submit">Fix this page</button>
       </form>
-      <p class="under">Press <kbd>Ctrl</kbd> + <kbd>V</kbd> to paste. No page handy?
+      <p class="under">Copied an address? Press <kbd>Ctrl</kbd> + <kbd>V</kbd> anywhere on this page and the check starts. No page handy?
         <button type="button" class="linkish" id="demo">Try our deliberately broken demo page</button>.</p>
       <p id="msg" role="status" aria-live="polite"></p>
       <div class="bar" id="bar" hidden><i></i></div>
@@ -229,6 +232,7 @@
           <pre tabindex="0" aria-label="The line to add to your page">&lt;script src="ctrl-a11y-fixes.js"&gt;&lt;/script&gt;</pre>
           <a class="btn light" id="dljs" href="#" download="ctrl-a11y-fixes.js">Download the fix script</a>
           <a class="alt" id="dl" href="#">Download the fixed page instead</a>
+          <a class="alt" id="report" href="#" download="accessibility-report.html">Download the report</a>
         </div>
       </div>
 
@@ -277,6 +281,15 @@ $("copybm").onclick = async () => {
   catch (e) { $("copied").textContent = "Copy didn't work here. Drag the Fix this page button to your bookmarks bar instead."; }
 };
 
+document.addEventListener("paste", e => {
+  if (e.target.closest && e.target.closest("input, textarea, [contenteditable]")) return;  // normal paste into fields
+  const text = (e.clipboardData && e.clipboardData.getData("text") || "").trim();
+  if (!/^https?:\/\/\S+$/.test(text)) return;
+  e.preventDefault();
+  $("url").value = text;
+  $("f").requestSubmit();
+});
+
 $("demo").onclick = () => { $("url").value = location.origin + "/demo/broken.html"; $("f").requestSubmit(); };
 
 const SAID = {
@@ -294,8 +307,26 @@ const plain = f => {
   const said = (SAID[f.attr] || (v => `${f.attr} set to "${v}"`))(f.value);
   return f.source ? `${said} (from ${f.source})` : said;
 };
+const wcagText = f => (f.wcag && f.wcag.length) ? "WCAG " + f.wcag.join(", ") : "Best practice";
 function items(list) {
-  return list.map(f => `<li><span class="what">${esc(f.help)}</span><span class="did">${esc(plain(f))}</span><code>${esc(f.html)}</code></li>`).join("");
+  return list.map(f => `<li><span class="what">${esc(f.help)}<span class="meta"><span class="sev-${esc(f.impact)}">${esc(f.impact || "")}</span> · ` +
+    `<a href="${esc(f.help_url)}" target="_blank" rel="noopener">${esc(wcagText(f))}<span class="vh"> (opens explanation in a new tab)</span></a></span></span>` +
+    `<span class="did">${esc(plain(f))}</span><code>${esc(f.html)}</code></li>`).join("");
+}
+let lastResult = null;
+function reportHtml(r) {
+  const when = new Date().toLocaleString();
+  const row = f => `<tr><td>${esc(f.status)}</td><td>${esc(f.help)}<br><small>${esc(wcagText(f))}, ${esc(f.impact || "")}</small></td>` +
+    `<td><code>${esc(f.html)}</code></td><td>${esc(plain(f))}</td></tr>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Accessibility report: ${esc(r.url)}</title>
+<style>body{font:15px/1.5 system-ui,sans-serif;max-width:1000px;margin:32px auto;padding:0 16px;color:#17181a}
+table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:6px 8px;vertical-align:top;text-align:left}
+th{background:#f3f4f6}code{font-size:12px;word-break:break-all}</style></head><body><main>
+<h1>Accessibility report</h1><p><b>Page:</b> ${esc(r.url)}<br><b>Checked:</b> ${esc(when)} with axe-core in a real browser by Ctrl+A11y.</p>
+<p><b>${r.before}</b> problems found. <b>${r.verified}</b> fixes proven by a second check. <b>${r.after}</b> problems left. <b>${r.new_problems.length}</b> new problems introduced.</p>
+<p>A fix counts only if the same rule no longer flags the same element on the second check. Fixes that created a new problem were undone automatically.</p>
+<table><thead><tr><th scope="col">Status</th><th scope="col">Problem</th><th scope="col">Element</th><th scope="col">What was done</th></tr></thead>
+<tbody>${r.fixes.map(row).join("")}</tbody></table></main></body></html>`;
 }
 function highlightChanged(before, after) {
   const seen = new Set(before.split("\n"));
@@ -319,6 +350,8 @@ $("f").onsubmit = async e => {
     $("njs").textContent = r.verified;
     $("dljs").href = URL.createObjectURL(new Blob([r.fix_script], {type: "text/javascript"}));
     $("dl").href = "/api/patched/" + r.patched_id;
+    lastResult = r;
+    $("report").href = URL.createObjectURL(new Blob([reportHtml(r)], {type: "text/html"}));
     $("proven").innerHTML = items(proven) || "<li>No fixes this time.</li>";
     $("person").innerHTML = items(person) || "<li>Nothing left for a person.</li>";
     $("c-proven").textContent = `(${proven.length})`; $("c-person").textContent = `(${person.length})`;

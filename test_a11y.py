@@ -111,3 +111,6 @@ def test_wrapped_page_keeps_header_footer_and_hidden_buttons():
     assert not any(f["status"] in ("rolled back", "failed re-check") for f in r["fixes"])
     assert by[("aria-command-name", ".bi")]["value"] == "Share"
     assert by[("aria-command-name", ".marker")]["status"] == "not fixed"
+    # Removing the bad role="tree" also repairs its list items; the re-check proves it, so they're "resolved".
+    assert by[("aria-required-children", "ul")]["status"] == "verified"
+    assert {f["status"] for f in r["fixes"] if f["rule"] == "listitem"} == {"resolved"} and r["resolved"] == 2

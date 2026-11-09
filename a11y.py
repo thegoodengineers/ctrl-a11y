@@ -237,8 +237,15 @@ async ([rule, selector, extra]) => {
 
 
 def _audit(page):
-    page.evaluate(AXE)
-    result = page.evaluate("() => axe.run(document, {resultTypes: ['violations']})")
+    for attempt in (1, 2):
+        try:
+            page.evaluate(AXE)
+            result = page.evaluate("() => axe.run(document, {resultTypes: ['violations']})")
+            break
+        except Exception as e:  # the page redirected itself mid-check: wait for it to settle, check once more
+            if attempt == 2 or "context was destroyed" not in str(e):
+                raise
+            page.wait_for_load_state("load", timeout=20000)
     return [
         {"rule": v["id"], "impact": v["impact"], "help": v["help"], "help_url": v.get("helpUrl", ""),
          "wcag": _wcag(v.get("tags", [])),
@@ -323,11 +330,12 @@ def _key(v):
 
 def _open(page, url):
     """Load the page and let late content (footers, hydration) settle, so every audit sees the same page."""
-    resp = page.goto(url, wait_until="load", timeout=30000)
-    try:
-        page.wait_for_load_state("networkidle", timeout=5000)
-    except Exception:  # pages that never go quiet (live tickers) are audited as they are
-        pass
+    resp = page.goto(url, wait_until="domcontentloaded", timeout=30000)
+    for state, ms in (("load", 20000), ("networkidle", 5000)):
+        try:
+            page.wait_for_load_state(state, timeout=ms)
+        except Exception:  # a slow image or a live ticker must not fail the check; audit what has loaded
+            pass
     return resp
 
 
@@ -409,10 +417,18 @@ def run(url, describe=True):
                 if not new:
                     break
 
+        # A problem we didn't touch can still disappear: removing a broken role="tree" also repairs its list items.
+        # The final re-check proves it, so say so instead of leaving it for a person.
+        final = {_key(a) for a in after}
+        for f in fixes:
+            if f["status"] == "not fixed" and _key(f) not in final:
+                f["status"], f["why"] = "resolved", "gone on the re-check after a related fix"
+
         result = {
             "url": url, "http_status": status, "blocked": blocked,
             "before": len(before), "after": len(after),
             "verified": sum(f["status"] == "verified" for f in fixes),
+            "resolved": sum(f["status"] == "resolved" for f in fixes),
             "new_problems": new,
             "fixes": fixes,
             "reader_before": reader_before,

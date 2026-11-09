@@ -21,6 +21,7 @@ Branch: `bhumika/<task>` → pull request into `main`. Run `python -m pytest -q`
 ## 2. Our own page must pass our own check (by 10 Nov, 3:00 PM)
 - Start the server: `python -m uvicorn server:app --port 8765`
 - Run: `python a11y.py http://localhost:8765/ --no-ai`
+- Status 9 Nov: it already reports **0 problems**. Keep it at 0 after your design changes.
 - Done when: it reports **0 problems** on our own page. Screenshot that result; it's a great line for the video.
 
 ## 3. Screenshots for Devpost (by 10 Nov, 8:00 PM)

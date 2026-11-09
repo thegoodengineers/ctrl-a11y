@@ -9,7 +9,9 @@ Describing the product's own feature ("a vision AI model writes image descriptio
 Before you push: `git log --format=%B | grep -i co-authored` must print nothing.
 Branch: `chirag/<task>` → pull request into `main`. Run `python -m pytest -q` before every push.
 
-## 1. Fix the 3 contrast fixes that fail the re-check (by 10 Nov, 12:00 PM)
+## 1. ✅ DONE 9 Nov: fix the 3 contrast fixes that fail the re-check
+- Cause: text in python.org's rotating slideshow, measured mid-fade; the slide changed before the re-check.
+  Now skipped with the reason "inside a moving slideshow". python.org: 0 failed, 17 proven. Test: `test_slideshow_text_is_skipped_not_failed`.
 - Files: `a11y.py` (`FIX_JS`, the `color-contrast` branch)
 - Reproduce: `python a11y.py https://www.python.org/ --no-ai` and look for `failed re-check`.
 - Likely causes to check: text over a background image or gradient, a parent with opacity, or a pseudo-element.

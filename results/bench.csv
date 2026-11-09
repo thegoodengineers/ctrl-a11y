@@ -1,9 +1,9 @@
 url,before,after,verified,failed_recheck,new_problems,error,ai,commit,run_at
-https://www.w3.org/WAI/demos/bad/before/home.html,67,64,3,0,0,,off,59c84c0,2026-11-09T12:06:56
-https://www.w3.org/WAI/demos/bad/before/news.html,52,51,1,0,0,,off,59c84c0,2026-11-09T12:06:56
-https://www.india.gov.in/,5,4,1,0,0,,off,59c84c0,2026-11-09T12:06:56
-https://www.cbse.gov.in/,5,4,1,0,0,,off,59c84c0,2026-11-09T12:06:56
-https://www.python.org/,120,100,20,3,0,,off,59c84c0,2026-11-09T12:06:56
-https://news.ycombinator.com/,247,6,241,0,0,,off,59c84c0,2026-11-09T12:06:56
-https://www.craigslist.org/about/sites,31,28,3,0,0,,off,59c84c0,2026-11-09T12:06:56
-https://example.com/,9,9,0,0,0,,off,59c84c0,2026-11-09T12:06:56
+https://www.w3.org/WAI/demos/bad/before/home.html,67,64,3,0,0,,off,c3fdfac,2026-11-09T12:25:29
+https://www.w3.org/WAI/demos/bad/before/news.html,52,51,1,0,0,,off,c3fdfac,2026-11-09T12:25:29
+https://www.india.gov.in/,5,4,1,0,0,,off,c3fdfac,2026-11-09T12:25:29
+https://www.cbse.gov.in/,5,4,1,0,0,,off,c3fdfac,2026-11-09T12:25:29
+https://www.python.org/,120,98,17,0,0,,off,c3fdfac,2026-11-09T12:25:29
+https://news.ycombinator.com/,247,6,241,0,0,,off,c3fdfac,2026-11-09T12:25:29
+https://www.craigslist.org/about/sites,31,28,3,0,0,,off,c3fdfac,2026-11-09T12:25:29
+https://example.com/,9,9,0,0,0,,off,c3fdfac,2026-11-09T12:25:29

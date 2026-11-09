@@ -7,9 +7,10 @@ Built for the [Ctrl+V Hackathon](https://ctrl-v-hackathon-31831.devpost.com/) (6
 Chirag, Bhumika, Ayush and Abhijeet (The Good Engineers).
 
 ## For judges, start here
+- **Our own page:** 0 problems on our own check (`python a11y.py http://localhost:8765/ --no-ai`).
 - **Demo page:** run the app and click "Try our deliberately broken demo page": 10 problems found,
   7 fixed and proven, 0 new problems (`test_a11y.py` checks this on every run).
-- **Real pages** (`results/bench.csv`, 8 public pages, AI descriptions off, run 9 Nov 2026):
+- **Real pages** (`results/bench.csv`, 8 public pages, AI descriptions off, latest run 9 Nov 2026):
 
   | Page | Problems before | After | Fixes proven | Fix did not hold | New problems |
   |---|---|---|---|---|---|
@@ -17,13 +18,14 @@ Chirag, Bhumika, Ayush and Abhijeet (The Good Engineers).
   | W3C inaccessible demo, news | 52 | 51 | 1 | 0 | 0 |
   | india.gov.in | 5 | 4 | 1 | 0 | 0 |
   | cbse.gov.in | 5 | 4 | 1 | 0 | 0 |
-  | python.org | 120 | 100 | 20 | 3 | 0 |
+  | python.org | 120 | 98 | 17 | 0 | 0 |
   | news.ycombinator.com | 247 | 6 | 241 | 0 | 0 |
   | craigslist.org/about/sites | 31 | 28 | 3 | 0 | 0 |
   | example.com | 9 | 9 | 0 | 0 | 0 |
-  | **Total** | **536** | **266** | **270** | **3** | **0** |
+  | **Total** | **536** | **264** | **267** | **0** | **0** |
 
-  Honest reading: most of the gain is low-contrast text (241 of the 270 on Hacker News). Without the
+  Honest reading: most of the gain is low-contrast text (241 of the 267 on Hacker News). "After" can drop by
+  more than the proven count, because one fix sometimes clears a related problem. Without the
   AI step, images and icon-only buttons are reported as "needs a person", not guessed.
 
 ## How it works
@@ -52,4 +54,4 @@ picks up a key by accident), and `CTRL_A11Y_MODEL` to the vision model ID. Both 
 - Fixes are applied to the live page and exported as a patched HTML snapshot; it does not edit the site's source code yet.
 - One page at a time; no logins, no PDFs.
 - Rules it does not fix (headings order, landmarks, ARIA misuse and more) are listed for a person.
-- 3 contrast fixes on python.org did not hold on re-check; under investigation, and shown as failures in the app.
+- Text inside moving slideshows is listed for a person: its colours change mid-fade, so a fix can't be proven.

@@ -21,6 +21,7 @@
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--page); color: var(--ink); font: 17px/1.6 var(--sans); }
   :focus-visible { outline: 3px solid var(--glow); outline-offset: 3px; }
+  [tabindex="-1"]:focus { outline: none; }  /* headings we move focus to by script, not by keyboard */
   a { color: inherit; text-underline-offset: 3px; }
   .wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; }
   .skip { position: absolute; left: -999px; }

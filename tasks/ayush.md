@@ -1,6 +1,12 @@
 # Ayush: demo video, demo page, more real pages
 
 Deadline for the team: **11 Nov, 3:30 AM IST**. Code freeze **10 Nov, 9:00 PM IST**.
+
+## Rule for everyone: never name the AI tools we used to build this
+Do not name any AI assistant or chatbot used to build this project anywhere: commit messages, co-author lines,
+code comments, README, docs, Devpost text, screenshots or the video. No `Co-Authored-By` lines for AI tools.
+Describing the product's own feature ("a vision AI model writes image descriptions") is fine.
+Before you push: `git log --format=%B | grep -i co-authored` must print nothing.
 Branch: `ayush/<task>` → pull request into `main`. Run `python -m pytest -q` before every push.
 
 ## 1. More real pages in the benchmark (by 10 Nov, 12:00 PM)

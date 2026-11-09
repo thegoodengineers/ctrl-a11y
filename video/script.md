@@ -13,8 +13,8 @@ or the WebAIM Million 2026 report.
 | 5 | app:result | Score card and ship card | On our broken demo page, ten problems. All ten fixed, and every one proven, because we run the same check again. Zero new problems. |
 | 6 | app:fixes | Scroll the fixed and proven list | Each fix says where it came from. A label from the field's name. A link named from its address. Anything we can't fix honestly goes to a person. We never guess. |
 | 7 | app:reader | Screen reader view, before and after | This is what a screen reader hears. Before, just textbox. After, destination city, textbox. |
-| 8 | app:real | Hacker News result | On a real site, Hacker News, nearly two hundred and fifty problems, down to two. |
-| 9 | app:site | Site check table filling | One click checks five more pages of the same site. Across six pages, more than thirteen hundred problems, down to twelve. |
+| 8 | app:real | Hacker News result | On a real site, Hacker News, nearly two hundred and fifty problems, down to almost none. |
+| 9 | app:site | Site check table filling | One click checks five more pages of the same site. Across six pages, more than thirteen hundred problems, down to a handful. |
 | 10 | app:ship | Ship the fixes card | Site owners ship only the proven fixes, with one line of code. And it runs in their build pipeline too. |
 | 11 | app:bookmark | Bookmark section, then the demo page fixed by the bookmark | If you use a screen reader, add one bookmark. On any hard page, it applies the proven fixes, and tells you how many. |
 | 12 | card:safety | Safety net and our own score | If a fix ever makes a page worse, we undo it automatically. And our own app passes its own check, with zero problems. |

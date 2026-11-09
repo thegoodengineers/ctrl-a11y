@@ -60,8 +60,8 @@ the six we fix:
    hears before and after, the fixed page, and a dated accessibility report (itself 0 problems on our check).
 7. **Ctrl+V anywhere:** copy an address, press Ctrl+V anywhere on the page, and the check starts.
 8. **See it and scale it:** before/after screenshots of the page, and one click to check up to 5 more pages on
-   the same site. Hacker News, 6 pages (`results/site_news_ycombinator_com.csv`): 1,364 problems to 12,
-   1,352 fixes proven, 0 failed, 0 new. Re-run with `python bench.py --site https://news.ycombinator.com/`.
+   the same site. Hacker News, 6 pages (`results/site_news_ycombinator_com.csv`): 1,361 problems to 6,
+   1,355 fixes proven, 0 failed, 0 new. Re-run with `python bench.py --site https://news.ycombinator.com/`.
 
 ## For people who use screen readers: fix pages as you browse
 A "Fix this page" bookmarklet: add one bookmark, open it on any hard-to-use page, and that page gets our proven

@@ -1,7 +1,7 @@
 url,before,after,verified,failed_recheck,rolled_back,new_problems,error,ai,commit,run_at
-https://news.ycombinator.com/,248,2,246,0,0,0,,off,a45601b,2026-11-09T13:14:10
-https://news.ycombinator.com/news,248,2,246,0,0,0,,off,a45601b,2026-11-09T13:14:10
-https://news.ycombinator.com/newest,279,2,277,0,0,0,,off,a45601b,2026-11-09T13:14:10
-https://news.ycombinator.com/front,225,2,223,0,0,0,,off,a45601b,2026-11-09T13:14:10
-https://news.ycombinator.com/newcomments,222,2,220,0,0,0,,off,a45601b,2026-11-09T13:14:10
-https://news.ycombinator.com/ask,142,2,140,0,0,0,,off,a45601b,2026-11-09T13:14:10
+https://news.ycombinator.com/,248,1,247,0,0,0,,off,32a47da,2026-11-09T13:50:20
+https://news.ycombinator.com/news,248,1,247,0,0,0,,off,32a47da,2026-11-09T13:50:20
+https://news.ycombinator.com/newest,278,1,277,0,0,0,,off,32a47da,2026-11-09T13:50:20
+https://news.ycombinator.com/front,225,1,224,0,0,0,,off,32a47da,2026-11-09T13:50:20
+https://news.ycombinator.com/newcomments,220,1,219,0,0,0,,off,32a47da,2026-11-09T13:50:20
+https://news.ycombinator.com/ask,142,1,141,0,0,0,,off,32a47da,2026-11-09T13:50:20

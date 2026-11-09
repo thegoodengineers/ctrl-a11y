@@ -9,6 +9,12 @@ Describing the product's own feature ("a vision AI model writes image descriptio
 Before you push: `git log --format=%B | grep -i co-authored` must print nothing.
 Branch: `bhumika/<task>` → pull request into `main`. Run `python -m pytest -q` before every push.
 
+## What changed since this file was written (9 Nov evening)
+- The page was restyled (calm premium look) and gained new panels: the screen-reader bookmark, see the difference
+  (screenshots), check more of this site, the downloadable report, WCAG labels on every problem.
+- CI now fails if our own page has any problem, so keep running `python a11y.py http://localhost:8765/ --no-ai`
+  after every change. Review the new panels on a phone-width window, and take the Devpost screenshots of them.
+
 ## 1. Polish the web app (by 10 Nov, 3:00 PM)
 - Status 9 Nov: the page now follows a calm premium-fintech look (team's choice): light serif headlines (Fraunces),
   Manrope text, a big charcoal gradient hero panel with floating glass tiles, a centred statement, rounded step cards,

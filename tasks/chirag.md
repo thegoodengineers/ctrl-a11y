@@ -9,6 +9,11 @@ Describing the product's own feature ("a vision AI model writes image descriptio
 Before you push: `git log --format=%B | grep -i co-authored` must print nothing.
 Branch: `chirag/<task>` → pull request into `main`. Run `python -m pytest -q` before every push.
 
+## What changed since this file was written (9 Nov evening)
+- ✅ Done and merged: 8 more fixers, automatic rollback, block-page detection, screen-reader bookmark, private-address
+  guard, CI mode, WCAG labels, report download, Ctrl+V anywhere, screenshots, site check, SVG text and linked-image
+  descriptions, video pipeline, GitHub Actions, Devpost text rewrite. Benchmark: 527 to 72 on 6 pages, 0 failed, 0 new.
+
 ## 1. ✅ DONE 9 Nov: fix the 3 contrast fixes that fail the re-check
 - Cause: text in python.org's rotating slideshow, measured mid-fade; the slide changed before the re-check.
   Now skipped with the reason "inside a moving slideshow". python.org: 0 failed, 17 proven. Test: `test_slideshow_text_is_skipped_not_failed`.

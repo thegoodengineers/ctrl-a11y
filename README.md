@@ -26,19 +26,19 @@ the six we fix:
 - **Our own page:** 0 problems on our own check, landing page and results view, at 1280 and 375 px wide.
 - **Demo pages:** "Try our deliberately broken demo page" in the app: 10 problems found, **all 10 fixed and
   proven**, 0 new, with no AI model: the two images are described from the text inside them. A second test page (`demo/more.html`) covers spacer images, icon buttons, icon links, tab order,
-  landmarks and dropdowns: 9 of 9 fixed and proven. Both are checked by `test_a11y.py` on every run.
+  landmarks, dropdowns, linked images and layout slices: 12 of 12 fixed and proven. Both are checked by `test_a11y.py` on every run.
 - **Real pages** (`results/bench.csv`, AI descriptions off, latest run 9 Nov 2026):
 
   | Page | Problems before | After | Fixes proven | Did not hold | Rolled back | New problems |
   |---|---|---|---|---|---|---|
-  | W3C inaccessible demo, home | 67 | 38 | 23 | 0 | 0 | 0 |
-  | W3C inaccessible demo, news | 52 | 35 | 17 | 0 | 0 | 0 |
+  | W3C inaccessible demo, home | 67 | 28 | 33 | 0 | 0 | 0 |
+  | W3C inaccessible demo, news | 52 | 25 | 27 | 0 | 0 | 0 |
   | python.org | 120 | 2 | 80 | 0 | 0 | 0 |
-  | news.ycombinator.com | 248 | 2 | 246 | 0 | 0 | 0 |
+  | news.ycombinator.com | 248 | 1 | 247 | 0 | 0 | 0 |
   | craigslist.org/about/sites | 31 | 7 | 24 | 0 | 0 | 0 |
   | example.com | 9 | 9 | 0 | 0 | 0 | 0 |
-  | **Total, 6 pages** | **527** | **93** | **390** | **0** | **0** | **0** |
-  | india.gov.in, cbse.gov.in | served "Access Denied" (HTTP 403) to the browser, so **not scored** | | | | | |
+  | **Total, 6 pages** | **527** | **72** | **411** | **0** | **0** | **0** |
+  | india.gov.in, cbse.gov.in | site served a block or error page to the browser (HTTP 403); not scored | | | | | |
 
   Honest reading: Hacker News is mostly low-contrast text. "After" can drop by more than the proven
   count, because one fix (like marking the main area) can clear several problems. example.com's text sits
@@ -60,8 +60,8 @@ the six we fix:
    hears before and after, the fixed page, and a dated accessibility report (itself 0 problems on our check).
 7. **Ctrl+V anywhere:** copy an address, press Ctrl+V anywhere on the page, and the check starts.
 8. **See it and scale it:** before/after screenshots of the page, and one click to check up to 5 more pages on
-   the same site. Hacker News, 6 pages (`results/site_news_ycombinator_com.csv`): 1,364 problems to 12,
-   1,352 fixes proven, 0 failed, 0 new. Re-run with `python bench.py --site https://news.ycombinator.com/`.
+   the same site. Hacker News, 6 pages (`results/site_news_ycombinator_com.csv`): 1,361 problems to 6,
+   1,355 fixes proven, 0 failed, 0 new. Re-run with `python bench.py --site https://news.ycombinator.com/`.
 
 ## For people who use screen readers: fix pages as you browse
 A "Fix this page" bookmarklet: add one bookmark, open it on any hard-to-use page, and that page gets our proven

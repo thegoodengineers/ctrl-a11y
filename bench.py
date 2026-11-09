@@ -18,7 +18,36 @@ PAGES = [
     "https://example.com/",
 ]
 
+NAMES = {"https://www.w3.org/WAI/demos/bad/before/home.html": "W3C inaccessible demo, home",
+         "https://www.w3.org/WAI/demos/bad/before/news.html": "W3C inaccessible demo, news"}
+
+
+def readme_table():
+    """Rewrite the results table in README.md from results/bench.csv, so the README can't drift from the data."""
+    import re
+    rows = list(csv.DictReader(open(pathlib.Path(__file__).parent / "results" / "bench.csv", encoding="utf-8")))
+    ok = [r for r in rows if not r["error"]]
+    name = lambda u: NAMES.get(u, u.split("//")[1].rstrip("/").replace("www.", ""))
+    tot = lambda k: sum(int(r[k]) for r in ok)
+    lines = ["  | Page | Problems before | After | Fixes proven | Did not hold | Rolled back | New problems |",
+             "  |---|---|---|---|---|---|---|"]
+    lines += [f"  | {name(r['url'])} | {r['before']} | {r['after']} | {r['verified']} | {r['failed_recheck']} | {r['rolled_back']} | {r['new_problems']} |" for r in ok]
+    lines.append(f"  | **Total, {len(ok)} pages** | **{tot('before')}** | **{tot('after')}** | **{tot('verified')}** | **{tot('failed_recheck')}** | **{tot('rolled_back')}** | **{tot('new_problems')}** |")
+    bad = [r for r in rows if r["error"]]
+    if bad:
+        lines.append(f"  | {', '.join(name(r['url']) for r in bad)} | {bad[0]['error']} | | | | | |")
+    readme = pathlib.Path(__file__).parent / "README.md"
+    text = readme.read_text(encoding="utf-8")
+    nl = chr(10)
+    text = re.sub(r"  \| Page \| Problems before \|.*?" + nl + "(?=" + nl + ")",
+                  lambda m: nl.join(lines) + nl, text, count=1, flags=re.S)
+    readme.write_text(text, encoding="utf-8")
+    print(nl.join(lines))
+
+
 if __name__ == "__main__":
+    if sys.argv[1:2] == ["--readme"]:
+        readme_table(); sys.exit()
     out = pathlib.Path(__file__).parent / "results" / "bench.csv"
     if sys.argv[1:2] == ["--site"]:
         # Whole-site mode: the page plus up to 5 same-site pages it links to, as the app's site check does.

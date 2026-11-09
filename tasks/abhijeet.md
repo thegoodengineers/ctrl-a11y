@@ -9,6 +9,13 @@ Describing the product's own feature ("a vision AI model writes image descriptio
 Before you push: `git log --format=%B | grep -i co-authored` must print nothing.
 Branch: `abhijeet/<task>` → pull request into `main`. Run `python -m pytest -q` before every push.
 
+## What changed since this file was written (9 Nov evening)
+- Many images no longer need the AI step: spacers and layout slices are marked decorative, linked images take
+  their link's purpose, and SVG images use the words inside them. The demo page is now 10 of 10 fixed with AI off.
+- Where AI still matters: real photos and raster images with no clue on the page, e.g. the W3C demo home page
+  (`https://www.w3.org/WAI/demos/bad/before/home.html`). Measure AI on vs off there; that is the clearest proof of its value.
+- The AI step reads `CTRL_A11Y_ANTHROPIC_API_KEY` and `CTRL_A11Y_MODEL` from your own environment only.
+
 ## 1. Turn the AI step on and prove it works (by 10 Nov, 12:00 PM)
 - Files: `a11y.py` (`_describe`, and the `image-alt` / `button-name` / `link-name` branch of `FIX_JS`)
 - Get an Anthropic API key from https://console.anthropic.com and set it only in your own terminal:

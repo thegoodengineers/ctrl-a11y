@@ -33,11 +33,11 @@ the six we fix:
   |---|---|---|---|---|---|---|
   | W3C inaccessible demo, home | 67 | 28 | 33 | 0 | 0 | 0 |
   | W3C inaccessible demo, news | 52 | 25 | 27 | 0 | 0 | 0 |
-  | python.org | 120 | 2 | 80 | 0 | 0 | 0 |
+  | python.org | 112 | 2 | 77 | 0 | 0 | 0 |
   | news.ycombinator.com | 248 | 1 | 247 | 0 | 0 | 0 |
-  | craigslist.org/about/sites | 31 | 7 | 24 | 0 | 0 | 0 |
+  | craigslist.org/about/sites | 47 | 28 | 19 | 0 | 0 | 0 |
   | example.com | 9 | 9 | 0 | 0 | 0 | 0 |
-  | **Total, 6 pages** | **527** | **72** | **411** | **0** | **0** | **0** |
+  | **Total, 6 pages** | **535** | **93** | **403** | **0** | **0** | **0** |
   | india.gov.in, cbse.gov.in | site served a block or error page to the browser (HTTP 403); not scored | | | | | |
 
   Honest reading: Hacker News is mostly low-contrast text. "After" can drop by more than the proven
@@ -53,7 +53,9 @@ the six we fix:
 4. **Safety net:** if the re-check finds any new problem, the engine rebuilds the page from the original with
    fewer fixes (one kind at a time, then all structural changes, then none) until no new problem remains,
    and marks what it undid as "rolled back". A fix is never left in place if it made the page worse
-   (`test_a_fix_that_creates_a_new_problem_is_rolled_back`).
+   (`test_a_fix_that_creates_a_new_problem_is_rolled_back`). Pages that change on every load (carousels,
+   tickers, random ids) are compared against a fresh unfixed copy, so the page's own changes are never
+   blamed on a fix. Strict Content-Security-Policy sites are checked too.
 5. **Ship:** a one-line fix script with only the proven fixes. Proven: on a fresh, untouched copy of the page,
    the script alone reproduces the engine's result (tests for both demo pages).
 6. **Show:** every fix in plain language with its WCAG success criterion and severity, what a screen reader
@@ -101,8 +103,9 @@ python -m pip install -r requirements.txt
 python -m playwright install chromium
 npm install
 python -m uvicorn server:app --port 8765     # open http://localhost:8765
-python -m pytest -q                          # 6 checks: both demo pages, safety net, server safety
+python -m pytest -q                          # 7 checks: three demo pages, fix script, safety net, server safety
 python bench.py                              # re-measure real pages -> results/bench.csv
+python bench.py --out bench_india.csv URL... # any other set of pages -> results/bench_india.csv
 python a11y.py https://example.com --no-ai   # command line
 ```
 Optional AI descriptions: set `CTRL_A11Y_ANTHROPIC_API_KEY` (an app-specific name, so the app never
@@ -114,3 +117,5 @@ picks up a key by accident), and `CTRL_A11Y_MODEL` to the vision model ID. Both 
 - Heading order, missing headings and content outside every landmark that isn't clearly named are listed for a person.
 - Text inside moving slideshows is listed for a person: its colours change mid-fade, so a fix can't be proven.
 - Some sites block automated browsers; we report that instead of scoring the block page.
+- Indian sites (`results/bench_india.csv`): 7 scored, 559 problems to 420, 133 fixes proven, 0 new problems.
+  uidai.gov.in (HTTP 500) and ndtv.com (HTTP 403) block automated browsers.

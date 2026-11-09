@@ -97,3 +97,17 @@ def test_server_refuses_private_addresses_and_serves_live_fix_script(monkeypatch
     assert "console.warn" in c.get("/api/fix.js", params={"url": "http://10.0.0.5/"}).text  # refused, but as harmless JS
     spoken = c.get("/api/fix.js", params={"url": "http://testserver/demo/broken.html", "announce": 1}).text
     assert "applied \" + 7 + \" proven" in spoken.replace("COUNT", "")  # screen-reader message carries the count
+
+
+def test_wrapped_page_keeps_header_footer_and_hidden_buttons():
+    """Lessons from mygov.in and vtu.ac.in: main must not swallow the header, a role=presentation button is not
+    named (that creates new problems), and a block named "footer" is not made a second footer."""
+    r = a11y.run(DEMO.replace("broken.html", "wrapped.html"), describe=False)
+    assert r["new_problems"] == []
+    by = {(f["rule"], f["target"]): f for f in r["fixes"]}
+    assert by[("landmark-one-main", "html")]["fix_target"] == "#content"
+    assert by[("button-name", "button")]["status"] == "not fixed"
+    assert by[("region", ".site-footer")]["status"] == "not fixed"
+    assert not any(f["status"] in ("rolled back", "failed re-check") for f in r["fixes"])
+    assert by[("aria-command-name", ".bi")]["value"] == "Share"
+    assert by[("aria-command-name", ".marker")]["status"] == "not fixed"

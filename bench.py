@@ -54,6 +54,8 @@ if __name__ == "__main__":
         first = a11y.run(sys.argv[2], describe=False)
         pages = [sys.argv[2]] + first["site_links"]
         out = out.with_name("site_" + sys.argv[2].split("//")[1].split("/")[0].replace(".", "_") + ".csv")
+    elif sys.argv[1:2] == ["--out"]:  # extra page sets (e.g. Indian sites) without touching bench.csv
+        out = out.with_name(sys.argv[2]); pages = sys.argv[3:]
     else:
         pages = sys.argv[1:] or PAGES
     out.parent.mkdir(exist_ok=True)

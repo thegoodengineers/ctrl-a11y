@@ -35,6 +35,8 @@ fix actually worked. We wanted the Ctrl+V of accessibility: paste a page, get it
 8. Developers can run it in CI: it fails the build when more problems remain than they allow.
 9. Every problem shows its WCAG success criterion and severity, and you can download a dated, printable
    accessibility report. Copy an address and press Ctrl+V anywhere on our page to start, true to the name.
+10. Before/after screenshots, and one click to check up to 5 more pages of the same site. On 6 Hacker News
+   pages: 1,364 problems down to 12, with 1,352 fixes proven and 0 new problems.
 
 ### How we built it
 Python, Playwright and Chromium for a real browser; axe-core 4.10.2 for checking; FastAPI for the app;

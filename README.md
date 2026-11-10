@@ -118,14 +118,13 @@ picks up a key by accident), and `CTRL_A11Y_MODEL` to the vision model ID. Both 
 
 ## Put it online (free)
 One container holds the app and a real Chromium (`Dockerfile`; CI builds it and checks it fixes the demo page).
-On Hugging Face Spaces: make a write token, then
-```
-python -m pip install huggingface_hub
-python deploy_hf.py <your-hf-name>/ctrl-a11y     # with HF_TOKEN set in your own terminal
-```
-It goes live at `https://<your-hf-name>-ctrl-a11y.hf.space` after the first build. The server allows 2 checks
-at once (`CTRL_A11Y_MAX_RUNS`); extra visitors are asked to retry instead of crashing it. Private and local
-addresses are refused, so the public demo can't be used to probe the network it runs on.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/thegoodengineers/ctrl-a11y)
+
+Click the button, sign in with GitHub, and Render builds it from `render.yaml` on its free plan. The server
+allows one check at a time there (`CTRL_A11Y_MAX_RUNS`); extra visitors are asked to retry instead of crashing
+it. Private and local addresses are refused, so the public demo can't be used to probe the network it runs on.
+Any other Docker host works too (`deploy_hf.py` publishes to Hugging Face Spaces on a paid plan).
 
 ## Known limits
 - The fix script repairs pages in the browser; editing the site's own source code (a pull request) is the next step.

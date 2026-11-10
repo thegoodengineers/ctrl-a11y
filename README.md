@@ -1,5 +1,7 @@
 # Ctrl+A11y
 
+**Try it live:** https://ctrl-a11y.onrender.com (free plan: the first visit after a quiet spell takes about a minute to wake)
+
 **Demo video (2 min):** https://youtu.be/WMV3hIreQyw
 
 [![tests](https://github.com/thegoodengineers/ctrl-a11y/actions/workflows/test.yml/badge.svg)](https://github.com/thegoodengineers/ctrl-a11y/actions/workflows/test.yml)

@@ -24,3 +24,16 @@ jobs:
           python -m uvicorn server:app --port 8765 &
           sleep 4
           python a11y.py http://localhost:8765/ --no-ai --max-after 0
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t ctrl-a11y .
+      - name: The container starts and fixes the demo page
+        run: |
+          docker run -d -p 7860:7860 --name app ctrl-a11y
+          for i in $(seq 1 30); do curl -sf localhost:7860/ >/dev/null && break; sleep 2; done
+          curl -sf -X POST localhost:7860/api/run -H 'Content-Type: application/json' \
+            -d '{"url":"http://localhost:7860/demo/broken.html"}' -o run.json || (docker logs app; exit 1)
+          python3 -c "import json; r = json.load(open('run.json')); print(r['before'], r['after'], r['verified']); assert r['verified'] >= 9 and not r['new_problems']"

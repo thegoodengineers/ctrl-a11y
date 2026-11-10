@@ -4,6 +4,7 @@ import ipaddress
 import os
 import pathlib
 import socket
+import threading
 import time
 import uuid
 from urllib.parse import urlsplit
@@ -22,6 +23,18 @@ patched = {}  # ponytail: in-memory store, lost on restart; fine for a demo, use
 run_cache = {}  # url -> (time, full result) so a page checked in the last 10 minutes returns at once
 live_cache = {}  # url -> (time, script); ponytail: in-memory, per process; use Redis if hosted with several workers
 LIVE_TTL = 600
+# Each check runs a whole browser. On a small public host, a few at once would run it out of memory, so cap it
+# and tell extra visitors to retry instead of crashing for everyone. Set CTRL_A11Y_MAX_RUNS to tune.
+SLOTS = threading.BoundedSemaphore(int(os.environ.get("CTRL_A11Y_MAX_RUNS", "2")))
+
+
+def audit(url):
+    if not SLOTS.acquire(timeout=60):
+        raise HTTPException(503, "Busy checking other pages right now. Try again in a minute.")
+    try:
+        return a11y.run(url)
+    finally:
+        SLOTS.release()
 
 
 class Job(BaseModel):
@@ -64,7 +77,9 @@ def run(job: Job, request: Request):  # sync def: FastAPI runs it in a thread, s
     if hit and time.time() - hit[0] < LIVE_TTL:
         return {**hit[1], "cached_seconds_ago": int(time.time() - hit[0])}
     try:
-        r = a11y.run(url)
+        r = audit(url)
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(502, f"Could not load or audit that page: {str(e).splitlines()[0][:200]}")
     rid = uuid.uuid4().hex[:8]
@@ -114,8 +129,8 @@ def live_fix(url: str, request: Request, announce: int = 0):
     if hit and time.time() - hit[0] < LIVE_TTL:
         return Response(finish(hit[1]), headers=js)
     try:
-        script = a11y.run(url)["fix_script"]
+        script = audit(url)["fix_script"]
     except Exception as e:
-        return Response(f"console.warn('Ctrl+A11y could not check this page: ' + {str(e).splitlines()[0][:120]!r});", headers=js)
+        return Response(f"console.warn('Ctrl+A11y could not check this page: ' + {str(getattr(e, 'detail', '') or e).splitlines()[0][:120]!r});", headers=js)
     live_cache[url] = (time.time(), script)
     return Response(finish(script), headers=js)

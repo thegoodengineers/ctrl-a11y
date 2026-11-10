@@ -1,0 +1,10 @@
+# One-click free hosting on Render: https://render.com/deploy?repo=https://github.com/thegoodengineers/ctrl-a11y
+services:
+  - type: web
+    name: ctrl-a11y
+    runtime: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: CTRL_A11Y_MAX_RUNS
+        value: "1"   # the free plan has 512 MB; one browser at a time

@@ -69,7 +69,7 @@ def check_url(url: str, request: Request) -> str:
     return url
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])  # HEAD: hosts probe health with it
 def index():
     return FileResponse(HERE / "web/index.html")
 

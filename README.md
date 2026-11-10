@@ -1,5 +1,7 @@
 # Ctrl+A11y
 
+**Demo video (2 min):** https://youtu.be/WMV3hIreQyw
+
 [![tests](https://github.com/thegoodengineers/ctrl-a11y/actions/workflows/test.yml/badge.svg)](https://github.com/thegoodengineers/ctrl-a11y/actions/workflows/test.yml)
 
 **Paste a URL, get an accessible site.** An agent finds what blocks blind, low-vision and keyboard

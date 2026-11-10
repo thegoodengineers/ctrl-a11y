@@ -41,6 +41,9 @@ class Job(BaseModel):
     url: str
 
 
+NAT64 = ipaddress.ip_network("64:ff9b::/96")
+
+
 def check_url(url: str, request: Request) -> str:
     """Only public http(s) pages. Private and internal addresses are refused so the server can't be used to
     probe the network it runs on; the server's own host is allowed so the demo pages work."""
@@ -55,6 +58,12 @@ def check_url(url: str, request: Request) -> str:
         raise HTTPException(400, f"Can't find the site {parts.hostname}. Check the address and try again.")
     for a in addrs:
         ip = ipaddress.ip_address(a.split("%")[0])
+        # NAT64 (64:ff9b::/96, common on Indian mobile networks) and IPv4-mapped addresses wrap a plain IPv4
+        # address: judge the address inside, or every site looks "reserved" on those networks.
+        if ip.version == 6 and ip in NAT64:
+            ip = ipaddress.IPv4Address(int(ip) & 0xFFFFFFFF)
+        elif ip.version == 6 and ip.ipv4_mapped:
+            ip = ip.ipv4_mapped
         if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast:
             raise HTTPException(400, "That address points to a private or internal network, which this tool doesn't check.")
     return url

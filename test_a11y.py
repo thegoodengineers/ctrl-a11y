@@ -119,3 +119,21 @@ def test_wrapped_page_keeps_header_footer_and_hidden_buttons():
     promo = by[("region", ".promo")]
     assert promo["status"] == "verified" and promo["value"] == "region" and promo["also"] == [["aria-label", "Festival offers"]]
     assert f'["{promo["fix_target"]}", "aria-label", "Festival offers"]' in r["fix_script"]
+
+
+def test_nat64_addresses_are_judged_by_the_ipv4_inside(monkeypatch):
+    """On NAT64 networks (common on Indian mobile ISPs) every site resolves to 64:ff9b::<ipv4>. Public ones must
+    pass; a wrapped private address must still be refused."""
+    import types
+    import pytest
+    from fastapi import HTTPException
+    import server
+    req = types.SimpleNamespace(url=types.SimpleNamespace(hostname="our-app"))
+    def resolves_to(addr):
+        monkeypatch.setattr(server.socket, "getaddrinfo", lambda *a, **k: [(None, None, None, None, (addr, 443, 0, 0))])
+    resolves_to("64:ff9b::2bcc:28c7")  # 43.204.40.199, myscheme.gov.in seen through NAT64
+    assert server.check_url("https://www.myscheme.gov.in/", req) == "https://www.myscheme.gov.in/"
+    for private in ("64:ff9b::a00:5", "::ffff:127.0.0.1"):  # 10.0.0.5 and loopback in disguise
+        resolves_to(private)
+        with pytest.raises(HTTPException):
+            server.check_url("https://sneaky.example/", req)

@@ -53,6 +53,8 @@ if __name__ == "__main__":
             at(page, "#sb", "06-see-the-difference.png", 160)
             at(page, ".ship", "07-ship-the-fixes.png", 160)
             check(page, REAL)
+            # Live third-party headlines can show anything; keep their thumbnails out of the screenshot.
+            page.evaluate("() => document.getElementById('sb').closest('.panel').style.display = 'none'")
             at(page, "#h-res", "08-real-site-hacker-news.png")
     finally:
         server.terminate()

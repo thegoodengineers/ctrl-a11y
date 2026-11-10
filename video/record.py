@@ -82,14 +82,18 @@ def app_fixes(page):
 def app_reader(page):
     run_app(page, DEMO); glide(page, "#rb", 10)
 
+def hide_thumbnails(page):
+    # Live third-party pages can show anything in their headlines; keep their thumbnails out of the video.
+    page.evaluate("() => document.getElementById('sb').closest('.panel').style.display = 'none'")
+
 def app_real(page):
-    run_app(page, REAL); glide(page, "#h-res", 10)
+    run_app(page, REAL); hide_thumbnails(page); glide(page, "#h-res", 10)
 
 def app_india(page):
     run_app(page, INDIA); glide(page, "#h-res", 10)
 
 def app_site(page):
-    run_app(page, REAL); glide(page, "#site-wrap", 10); page.wait_for_timeout(600)
+    run_app(page, REAL); hide_thumbnails(page); glide(page, "#site-wrap", 10); page.wait_for_timeout(600)
     page.click("#site-btn"); glide(page, "#site-wrap", 10)
 
 def app_ship(page):

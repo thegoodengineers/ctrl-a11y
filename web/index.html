@@ -338,7 +338,8 @@ const SAID = {
   "style.text-decoration": () => "Link underlined so it doesn't rely on colour",
   "role": v => v === null ? "Removed a role used without its required structure"
              : ({main: "Marked as the main area", banner: "Marked as the page header",
-                 navigation: "Marked as navigation", contentinfo: "Marked as the page footer"}[v] || `Role set to "${v}"`),
+                 navigation: "Marked as navigation", contentinfo: "Marked as the page footer",
+                 region: "Named as a section screen readers can jump to"}[v] || `Role set to "${v}"`),
 };
 const plain = f => {
   if (f.status === "rolled back") return f.why;

@@ -114,3 +114,8 @@ def test_wrapped_page_keeps_header_footer_and_hidden_buttons():
     # Removing the bad role="tree" also repairs its list items; the re-check proves it, so they're "resolved".
     assert by[("aria-required-children", "ul")]["status"] == "verified"
     assert {f["status"] for f in r["fixes"] if f["rule"] == "listitem"} == {"resolved"} and r["resolved"] == 2
+    # A block outside every landmark, with its own heading, becomes a region named after that heading,
+    # and the fix script carries both attributes.
+    promo = by[("region", ".promo")]
+    assert promo["status"] == "verified" and promo["value"] == "region" and promo["also"] == [["aria-label", "Festival offers"]]
+    assert f'["{promo["fix_target"]}", "aria-label", "Festival offers"]' in r["fix_script"]

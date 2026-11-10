@@ -1,9 +1,9 @@
 url,before,after,verified,resolved,failed_recheck,rolled_back,new_problems,error,ai,commit,run_at
-https://www.w3.org/WAI/demos/bad/before/home.html,67,28,33,6,0,0,0,,off,9511f41,2026-11-09T19:24:42
-https://www.w3.org/WAI/demos/bad/before/news.html,52,25,27,0,0,0,0,,off,9511f41,2026-11-09T19:24:42
-https://www.india.gov.in/,,,,,,,,site served a block or error page to the browser (HTTP 403); not scored,off,9511f41,2026-11-09T19:24:42
-https://www.cbse.gov.in/,,,,,,,,site served a block or error page to the browser (HTTP 403); not scored,off,9511f41,2026-11-09T19:24:42
-https://www.python.org/,112,2,77,33,0,0,0,,off,9511f41,2026-11-09T19:24:42
-https://news.ycombinator.com/,247,1,246,0,0,0,0,,off,9511f41,2026-11-09T19:24:42
-https://www.craigslist.org/about/sites,47,28,19,0,0,0,0,,off,9511f41,2026-11-09T19:24:42
-https://example.com/,9,9,0,0,0,0,0,,off,9511f41,2026-11-09T19:24:42
+https://www.w3.org/WAI/demos/bad/before/home.html,67,28,33,6,0,0,0,,off,5c779c2,2026-11-10T06:46:44
+https://www.w3.org/WAI/demos/bad/before/news.html,52,25,27,0,0,0,0,,off,5c779c2,2026-11-10T06:46:44
+https://www.india.gov.in/,,,,,,,,site served a block or error page to the browser (HTTP 403); not scored,off,5c779c2,2026-11-10T06:46:44
+https://www.cbse.gov.in/,,,,,,,,site served a block or error page to the browser (HTTP 403); not scored,off,5c779c2,2026-11-10T06:46:44
+https://www.python.org/,112,2,77,33,0,0,0,,off,5c779c2,2026-11-10T06:46:44
+https://news.ycombinator.com/,246,1,245,0,0,0,0,,off,5c779c2,2026-11-10T06:46:44
+https://www.craigslist.org/about/sites,47,28,19,0,0,0,0,,off,5c779c2,2026-11-10T06:46:44
+https://example.com/,9,9,0,0,0,0,0,,off,5c779c2,2026-11-10T06:46:44

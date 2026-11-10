@@ -1,6 +1,6 @@
 # Demo video script
 
-About 2:40, never sped up. `narrate.py`, `record.py` and `assemble.py` read the table below, so edit a
+About 2:50, never sped up. `narrate.py`, `record.py` and `assemble.py` read the table below, so edit a
 line here and rebuild. Numbers are written the way they are spoken, and every number comes from `results/`
 or the WebAIM Million 2026 report.
 
@@ -14,8 +14,9 @@ or the WebAIM Million 2026 report.
 | 6 | app:fixes | Scroll the fixed and proven list | Each fix says where it came from. A label from the field's name. A link named from its address. Anything we can't fix honestly goes to a person. We never guess. |
 | 7 | app:reader | Screen reader view, before and after | This is what a screen reader hears. Before, just textbox. After, destination city, textbox. |
 | 8 | app:real | Hacker News result | On a real site, Hacker News, nearly two hundred and fifty problems, down to almost none. |
-| 9 | app:site | Site check table filling | One click checks five more pages of the same site. Across six pages, more than thirteen hundred problems, down to a handful. |
-| 10 | app:ship | Ship the fixes card | Site owners ship only the proven fixes, with one line of code. And it runs in their build pipeline too. |
-| 11 | app:bookmark | Bookmark section, then the demo page fixed by the bookmark | If you use a screen reader, add one bookmark. On any hard page, it applies the proven fixes, and tells you how many. |
-| 12 | card:safety | Safety net and our own score | If a fix ever makes a page worse, we undo it automatically. And our own app passes its own check, with zero problems. |
-| 13 | card:close | Name, repo, team | Control A eleven Y. Every page, readable by everyone. Built by The Good Engineers. |
+| 9 | app:india | myScheme result | And on India's government scheme finder, myScheme, every problem we found, fixed and proven. |
+| 10 | app:site | Site check table filling | One click checks five more pages of the same site. Across six pages, more than thirteen hundred problems, down to a handful. |
+| 11 | app:ship | Ship the fixes card | Site owners ship only the proven fixes, with one line of code. And it runs in their build pipeline too. |
+| 12 | app:bookmark | Bookmark section, then the demo page fixed by the bookmark | If you use a screen reader, add one bookmark. On any hard page, it applies the proven fixes, and tells you how many. |
+| 13 | card:safety | Safety net and our own score | If a fix ever makes a page worse, we undo it automatically. And our own app passes its own check, with zero problems. |
+| 14 | card:close | Name, repo, team | Control A eleven Y. Every page, readable by everyone. Built by The Good Engineers. |

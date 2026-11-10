@@ -34,10 +34,10 @@ the six we fix:
   | W3C inaccessible demo, home | 67 | 28 | 33 | 6 | 0 | 0 | 0 |
   | W3C inaccessible demo, news | 52 | 25 | 27 | 0 | 0 | 0 | 0 |
   | python.org | 112 | 2 | 77 | 33 | 0 | 0 | 0 |
-  | news.ycombinator.com | 247 | 1 | 246 | 0 | 0 | 0 | 0 |
+  | news.ycombinator.com | 246 | 1 | 245 | 0 | 0 | 0 | 0 |
   | craigslist.org/about/sites | 47 | 28 | 19 | 0 | 0 | 0 | 0 |
   | example.com | 9 | 9 | 0 | 0 | 0 | 0 | 0 |
-  | **Total, 6 pages** | **534** | **93** | **402** | **39** | **0** | **0** | **0** |
+  | **Total, 6 pages** | **533** | **93** | **401** | **39** | **0** | **0** | **0** |
   | india.gov.in, cbse.gov.in | site served a block or error page to the browser (HTTP 403); not scored | | | | | | |
 
   Honest reading: Hacker News is mostly low-contrast text. "After" can drop by more than the proven
@@ -131,5 +131,6 @@ addresses are refused, so the public demo can't be used to probe the network it 
 - Heading order, missing headings and content outside every landmark that isn't clearly named are listed for a person.
 - Text inside moving slideshows is listed for a person: its colours change mid-fade, so a fix can't be proven.
 - Some sites block automated browsers; we report that instead of scoring the block page.
-- Indian sites (`results/bench_india.csv`): 7 scored, 563 problems to 426, 133 fixes proven, 17 more resolved, 0 new problems.
+- Indian sites (`results/bench_india.csv`): 7 scored, 563 problems to 315, 244 fixes proven, 11 more resolved, 0 new problems.
+  myScheme went from 29 to 0, The Hindu from 123 to 28, MyGov from 197 to 124.
   uidai.gov.in (HTTP 500) and ndtv.com (HTTP 403) block automated browsers.

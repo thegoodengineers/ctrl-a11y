@@ -5,6 +5,7 @@ Anything the engine cannot fix honestly is reported as "needs a human", never gu
 """
 import base64
 import re
+import time
 import os
 import pathlib
 
@@ -163,18 +164,39 @@ async ([rule, selector, extra]) => {
       return {attr: "role", value: "main", target: path(pick), source: "marked the block holding the page's main content as the main area"};
     }
     if (rule === "region" && main.contains(el)) return {attr: "role", value: "main", target: path(main), source: "now inside the main area"};
+    // Last honest option: the content sits in a block with its own heading, so name that block as a region after
+    // its heading. Screen-reader users can then jump to it by name. Never when it would nest landmarks.
+    const LANDMARK = "main,header,footer,nav,aside,form[aria-label],section[aria-label],[role=main],[role=banner]," +
+                     "[role=contentinfo],[role=navigation],[role=complementary],[role=region],[role=search]";
+    const namedRegion = (fallback) => {
+      const ours = el.closest("[role=region][aria-label]");
+      if (ours) return {attr: "role", value: "region", target: path(ours), also: [["aria-label", ours.getAttribute("aria-label")]],
+                        source: `now inside the region named "${ours.getAttribute("aria-label")}"`};
+      let box = el;
+      while (box && box !== document.body && !box.querySelector("h1,h2,h3,h4,h5,h6")) box = box.parentElement;
+      if (!box || box === document.body || !/^(DIV|SECTION|ARTICLE)$/.test(box.tagName) || box.getAttribute("role") ||
+          box.closest(LANDMARK) || box.querySelector(LANDMARK)) return {skip: fallback};
+      const h = box.querySelector("h1,h2,h3,h4,h5,h6"), name = (h.innerText || h.textContent || "").trim().replace(/\s+/g, " ");
+      if (!name || name.length > 60) return {skip: fallback};
+      // Two regions with one name confuse screen readers (carousels clone their slides), so the name must be unique.
+      const same = [...document.querySelectorAll("h1,h2,h3,h4,h5,h6")].filter(x => (x.innerText || x.textContent || "").trim().replace(/\s+/g, " ") === name);
+      if (same.length > 1 || document.querySelector(`[aria-label="${CSS.escape(name)}"]`)) return {skip: fallback};
+      box.setAttribute("role", "region"); box.setAttribute("aria-label", name);
+      return {attr: "role", value: "region", target: path(box), also: [["aria-label", name]],
+              source: `its own heading "${name}", so it became a named region`};
+    };
     if (rule === "region") {
       // Content outside main: if its top-level block names itself clearly, give it that landmark.
       let top = el; while (top.parentElement && top.parentElement !== document.body) top = top.parentElement;
       const nameOf = ((top.id || "") + " " + (top.getAttribute("class") || "")).toLowerCase();
-      if (top.getAttribute("role")) return {skip: "inside a block that already has a role; a person must decide"};
+      if (top.getAttribute("role")) return namedRegion("inside a block that already has a role; a person must decide");
       let role = null;
       if (/(^|[\s_-])(nav|navbar|navigation|menu|menubar)([\s_-]|$)/.test(nameOf)) role = "navigation";
       else if (/(^|[\s_-])(header|masthead|topbar|top|banner|site-header)([\s_-]|$)/.test(nameOf)) role = "banner";
       else if (/(^|[\s_-])(footer|site-footer|bottom)([\s_-]|$)/.test(nameOf)) role = "contentinfo";
       const existing = {banner: "header, [role=banner]", contentinfo: "footer, [role=contentinfo]"}[role];  // <footer> counts too
       if (!role || existing && document.querySelector(existing))
-        return {skip: "content outside every landmark; a person must decide which landmark it belongs to"};
+        return namedRegion("content outside every landmark; a person must decide which landmark it belongs to");
       top.setAttribute("role", role);
       return {attr: "role", value: role, target: path(top), source: `its block is named "${nameOf.trim()}", so marked as ${role}`};
     }
@@ -325,7 +347,14 @@ def _describe(page, target, rule):
 def _key(v):
     """Same problem on the same element. Random ids (swiper-wrapper-e819102eb6f1...) change on every load, so they
     are blanked out; otherwise a reload would look like a brand-new problem."""
-    return v["rule"], re.sub(r"[0-9a-f]{8,}", "#", v["target"])
+    t = re.sub(r"[0-9a-f]{8,}", "#", v["target"])
+    # Carousels move their "active" slide and clone slides on every load, so inside a slide the state classes and
+    # positions say nothing about which element it is. Only there: elsewhere li:nth-child(1) and (2) stay distinct.
+    if re.search(r"owl-item|slick-slide|swiper-slide|carousel-item|splide__slide|glide__slide", t):
+        t = re.sub(r"\.(active|cloned|current|selected|is-active|is-selected|slick-active|slick-current|slick-cloned|"
+                   r"swiper-slide-(?:active|next|prev|duplicate))\b", "", t)
+        t = re.sub(r":nth-child\(\d+\)", "", t)
+    return v["rule"], t
 
 
 def _open(page, url):
@@ -349,6 +378,7 @@ def run(url, describe=True):
         status = resp.status if resp else None
         head = (page.title() + " " + page.evaluate("() => (document.body ? document.body.innerText : '').slice(0, 400)")).lower()
         blocked = bool(status and status >= 400) or any(w in head for w in BLOCK_WORDS)
+        loaded_at = time.time()
         before = _audit(page)
         reader_before = page.locator("body").aria_snapshot()
         shot_before = _shot(page)
@@ -373,11 +403,12 @@ def run(url, describe=True):
                 fixes.append({**v, "status": "not fixed", "why": r["skip"]})
             else:
                 shown = "removed" if r["value"] is None else f'"{r["value"]}"'
-                fixes.append({**v, "status": "applied", "attr": r["attr"], "value": r["value"],
+                fixes.append({**v, "status": "applied", "attr": r["attr"], "value": r["value"], "also": r.get("also", []),
                               "fix_target": r.get("target") or v["target"], "source": r.get("source", ""),
                               "change": f'{r["attr"]} = {shown}' + (f' (from {r["source"]})' if r.get("source") else "")})
 
         after = _audit(page)
+        fix_seconds = time.time() - loaded_at  # how long after loading the re-check ran
         still = {_key(a) for a in after}
         for f in fixes:
             if f["status"] == "applied":
@@ -395,6 +426,9 @@ def run(url, describe=True):
             # load, and only if a new problem remains, undo one kind, then all structural, then all.
             # ponytail: one probe load; content that changes on every single load can still slip through.
             _open(page, url)
+            # Check the unfixed copy as late after loading as the re-check ran: some content (MyGov's search box
+            # styles) only appears seconds after load, and must not be blamed on a fix.
+            page.wait_for_timeout(int(min(fix_seconds, 20) * 1000))
             before_keys |= {_key(a) for a in _audit(page)}
             candidates = [set()] + [{r} for r in applied_rules] + [structural, None]
             first_pass = {id(f): f["status"] for f in fixes}
@@ -447,9 +481,10 @@ def fix_script(url, fixes, only_verified=True):
     proven = []
     for f in fixes:
         if f["status"] == "verified" or not only_verified:
-            entry = [f.get("fix_target") or f["target"], f["attr"], f["value"]]
-            if entry not in proven:  # one landmark fix can resolve many problems; apply it once
-                proven.append(entry)
+            target = f.get("fix_target") or f["target"]
+            for attr, value in [(f["attr"], f["value"])] + [tuple(a) for a in f.get("also", [])]:
+                if [target, attr, value] not in proven:  # one landmark fix can resolve many problems; apply it once
+                    proven.append([target, attr, value])
     return (f"/* Ctrl+A11y fixes for {url}: {len(proven)} fixes, each proven by re-check. "
             f"Add before </body>: <script src=\"ctrl-a11y-fixes.js\"></script> */\n"
             "(function () {\n"

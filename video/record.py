@@ -17,6 +17,7 @@ SIZE = {"width": 1280, "height": 720}
 PAUSE = 1.2
 DEMO = APP + "/demo/broken.html"
 REAL = "https://news.ycombinator.com/"
+INDIA = "https://www.myscheme.gov.in/"
 
 
 def lines():
@@ -59,6 +60,7 @@ def warm():
         run_app(pg, REAL)
         pg.click("#site-btn")
         pg.wait_for_function("() => document.getElementById('site-msg').textContent.startsWith('Done')", timeout=600000)
+        run_app(pg, INDIA)
         b.close()
 
 
@@ -83,6 +85,9 @@ def app_reader(page):
 def app_real(page):
     run_app(page, REAL); glide(page, "#h-res", 10)
 
+def app_india(page):
+    run_app(page, INDIA); glide(page, "#h-res", 10)
+
 def app_site(page):
     run_app(page, REAL); glide(page, "#site-wrap", 10); page.wait_for_timeout(600)
     page.click("#site-btn"); glide(page, "#site-wrap", 10)
@@ -102,7 +107,7 @@ def app_bookmark(page):
         d.style.cssText = 'position:fixed;left:24px;right:24px;bottom:24px;padding:18px 22px;border-radius:14px;background:#17181a;color:#fff;font:600 24px system-ui';
         document.body.appendChild(d); }""", said)
 
-APP_SCENES = {"paste": app_paste, "result": app_result, "fixes": app_fixes, "reader": app_reader, "real": app_real,
+APP_SCENES = {"paste": app_paste, "result": app_result, "fixes": app_fixes, "reader": app_reader, "real": app_real, "india": app_india,
               "site": app_site, "ship": app_ship, "bookmark": app_bookmark}
 
 

@@ -2,10 +2,10 @@
 # Works on Hugging Face Spaces (Docker SDK, port 7860), Render, Railway or any Docker host.
 FROM mcr.microsoft.com/playwright/python:v1.63.0-noble
 
-RUN apt-get update && apt-get install -y --no-install-recommends nodejs npm && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY requirements.txt package.json package-lock.json ./
-RUN python -m pip install --no-cache-dir -r requirements.txt && npm ci --omit=dev
+COPY requirements.txt package-lock.json fetch_axe.py ./
+# No Node.js needed: only axe-core's one script file, fetched as package-lock.json pins it (checksum verified).
+RUN python -m pip install --no-cache-dir -r requirements.txt && python fetch_axe.py
 COPY . .
 
 # Hugging Face Spaces runs containers as user 1000.

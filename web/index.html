@@ -131,6 +131,9 @@
   .rate-badge { display: inline-block; padding: 4px 10px; border-radius: 999px; background: #e3f5eb; color: var(--proven); font-weight: 700; font-size: .95rem; }
   .score .line { margin: 0; color: var(--ink); }
   .score .line b { font-weight: 700; }
+  .metric-strip { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); display: flex; align-items: baseline; gap: 8px; font-size: .92rem; }
+  .metric-val { font-weight: 700; color: var(--ink); }
+  .metric-lbl { color: var(--ink-2); }
   .ship { position: relative; overflow: hidden; border-radius: var(--r-lg); padding: 28px; color: #fff;
           background: linear-gradient(160deg, #3a3c40 0%, #1d1e21 100%); }
   .ship h2 { font: 400 1.5rem/1.2 var(--serif); margin: 0 0 8px; }
@@ -329,6 +332,7 @@
             <span class="rate-badge" id="rate-badge" hidden></span>
           </div>
           <p class="line" id="line"></p>
+          <div class="metric-strip" id="metric-strip" hidden><span class="metric-val" id="time-saved"></span><span class="metric-lbl">estimated manual audit &amp; remediation time saved</span></div>
         </div>
         <div class="ship">
           <h2>Ship the fixes today</h2>
@@ -694,6 +698,9 @@ $("f").onsubmit = async e => {
     const pct = r.before > 0 ? Math.round((r.verified / r.before) * 100) : 100;
     $("rate-badge").textContent = `${pct}% resolved`;
     $("rate-badge").hidden = false;
+    const hours = ((r.verified * 15) / 60).toFixed(1).replace(/\.0$/, "");
+    $("time-saved").textContent = `~${hours} hr${hours === "1" ? "" : "s"}`;
+    $("metric-strip").hidden = r.verified === 0;
     $("line").innerHTML = `<b>${r.before}</b> problems found, <b>${r.after}</b> left after fixing, <b>${r.new_problems.length}</b> new problems introduced.`;
     $("njs").textContent = r.verified;
     $("dljs").href = URL.createObjectURL(new Blob([r.fix_script], {type: "text/javascript"}));

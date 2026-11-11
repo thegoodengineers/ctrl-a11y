@@ -127,6 +127,7 @@
   .ship pre { margin: 0 0 18px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); border-radius: 10px;
               padding: 10px 12px; overflow-x: auto; font: .9rem var(--mono); color: #fff; }
   .ship code { font-family: var(--mono); }
+  .ship-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
   .ship .alt { display: inline-block; margin-left: 14px; color: #fff; }
   @media (max-width: 520px) { .ship .alt { display: block; margin: 14px 0 0; } }
 
@@ -257,7 +258,11 @@
           <h2>Ship the fixes today</h2>
           <p>Add one line before <code>&lt;/body&gt;</code>. The script holds only the <span id="njs"></span> proven fixes.</p>
           <pre tabindex="0" aria-label="The line to add to your page">&lt;script src="ctrl-a11y-fixes.js"&gt;&lt;/script&gt;</pre>
-          <a class="btn light" id="dljs" href="#" download="ctrl-a11y-fixes.js">Download the fix script</a>
+          <div class="ship-actions">
+            <a class="btn light" id="dljs" href="#" download="ctrl-a11y-fixes.js">Download the fix script</a>
+            <button type="button" class="btn light" id="copyscript">Copy script tag</button>
+            <span id="scriptcopied" role="status" aria-live="polite" class="vh"></span>
+          </div>
           <a class="alt" id="dl" href="#">Download the fixed page instead</a>
           <a class="alt" id="report" href="#" download="accessibility-report.html">Download the report</a>
         </div>
@@ -329,6 +334,17 @@ $("bm").onclick = e => { e.preventDefault(); $("copied").textContent = "Drag thi
 $("copybm").onclick = async () => {
   try { await navigator.clipboard.writeText(BOOKMARK); $("copied").textContent = "Copied. Now add a bookmark and paste this as its address."; }
   catch (e) { $("copied").textContent = "Copy didn't work here. Drag the Fix this page button to your bookmarks bar instead."; }
+};
+$("copyscript").onclick = async () => {
+  const tag = '<script src="ctrl-a11y-fixes.js"><' + '/script>';
+  try {
+    await navigator.clipboard.writeText(tag);
+    $("copyscript").textContent = "Copied!";
+    $("scriptcopied").textContent = "Script tag copied to clipboard";
+    setTimeout(() => { $("copyscript").textContent = "Copy script tag"; $("scriptcopied").textContent = ""; }, 2500);
+  } catch (e) {
+    $("copyscript").textContent = "Press Ctrl+C to copy";
+  }
 };
 
 document.addEventListener("paste", e => {

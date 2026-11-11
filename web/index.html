@@ -126,7 +126,9 @@
   @media (max-width: 860px) { .summary { grid-template-columns: 1fr; } }
   .score { background: var(--soft); border-radius: var(--r-lg); padding: 28px; }
   .score .label { color: var(--ink-2); font-weight: 600; margin: 0; }
-  .score .big { font: 300 clamp(3.2rem, 7vw, 4.6rem)/1 var(--serif); letter-spacing: -0.03em; margin: 6px 0 14px; color: var(--proven); }
+  .score-row { display: flex; align-items: baseline; gap: 14px; margin: 6px 0 14px; }
+  .score .big { font: 300 clamp(3.2rem, 7vw, 4.6rem)/1 var(--serif); letter-spacing: -0.03em; margin: 0; color: var(--proven); }
+  .rate-badge { display: inline-block; padding: 4px 10px; border-radius: 999px; background: #e3f5eb; color: var(--proven); font-weight: 700; font-size: .95rem; }
   .score .line { margin: 0; color: var(--ink); }
   .score .line b { font-weight: 700; }
   .ship { position: relative; overflow: hidden; border-radius: var(--r-lg); padding: 28px; color: #fff;
@@ -296,7 +298,10 @@
       <div class="summary">
         <div class="score">
           <p class="label">Fixes proven by the re-check</p>
-          <p class="big" id="big"></p>
+          <div class="score-row">
+            <p class="big" id="big"></p>
+            <span class="rate-badge" id="rate-badge" hidden></span>
+          </div>
           <p class="line" id="line"></p>
         </div>
         <div class="ship">
@@ -601,6 +606,9 @@ $("f").onsubmit = async e => {
     const failed = r.fixes.filter(f => f.status === "failed re-check" || f.status === "rolled back");
     $("shown").textContent = r.url;
     $("big").textContent = r.verified;
+    const pct = r.before > 0 ? Math.round((r.verified / r.before) * 100) : 100;
+    $("rate-badge").textContent = `${pct}% resolved`;
+    $("rate-badge").hidden = false;
     $("line").innerHTML = `<b>${r.before}</b> problems found, <b>${r.after}</b> left after fixing, <b>${r.new_problems.length}</b> new problems introduced.`;
     $("njs").textContent = r.verified;
     $("dljs").href = URL.createObjectURL(new Blob([r.fix_script], {type: "text/javascript"}));

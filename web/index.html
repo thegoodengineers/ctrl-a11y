@@ -21,6 +21,7 @@
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--page); color: var(--ink); font: 17px/1.6 var(--sans); }
   :focus-visible { outline: 3px solid var(--glow); outline-offset: 3px; }
+  .pill:focus-visible, .recent-btn:focus-visible, .btn-sm:focus-visible, .btn-top:focus-visible { outline: 3px solid var(--glow); outline-offset: 2px; }
   [tabindex="-1"]:focus { outline: none; }  /* headings we move focus to by script, not by keyboard */
   a { color: inherit; text-underline-offset: 3px; }
   .wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; }
@@ -516,6 +517,14 @@ $("btn-theme").onclick = () => {
 $("btn-shortcuts").onclick = () => $("dlg-shortcuts").showModal();
 $("dlg-close").onclick = () => $("dlg-shortcuts").close();
 document.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    if ($("dlg-shortcuts").open) {
+      $("dlg-shortcuts").close();
+    } else {
+      $("url").focus();
+    }
+    return;
+  }
   if (e.target.closest && e.target.closest("input, textarea, [contenteditable]")) return;
   if (e.key === "?" && !e.ctrlKey && !e.metaKey) {
     e.preventDefault();

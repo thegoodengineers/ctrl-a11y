@@ -143,9 +143,12 @@
   @media (max-width: 520px) { .ship .alt { display: block; margin: 14px 0 0; } }
 
   .panel { background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg); padding: 8px 0; margin-top: 16px; }
-  .filter-bar { display: flex; align-items: center; gap: 12px; margin: 16px 0 8px; }
-  .filter-bar input[type=search] { flex: 1; max-width: 28rem; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; font: inherit; font-size: .95rem; background: var(--soft); color: var(--ink); }
+  .filter-bar { display: flex; align-items: center; gap: 12px; margin: 16px 0 8px; flex-wrap: wrap; }
+  .filter-bar input[type=search] { flex: 1; min-width: 14rem; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; font: inherit; font-size: .95rem; background: var(--soft); color: var(--ink); }
   .filter-bar input[type=search]:focus-visible { outline: 2px solid var(--char); }
+  .filter-pills { display: flex; gap: 6px; }
+  .pill { border: 1px solid var(--line); background: var(--soft); color: var(--ink-2); padding: 8px 14px; border-radius: 999px; font: 600 .85rem var(--sans); cursor: pointer; }
+  .pill.active { background: var(--char); color: #fff; border-color: var(--char); }
   .filter-count { font-size: .88rem; color: var(--ink-2); font-weight: 500; }
   .panel h3 { font: 400 1.35rem var(--serif); margin: 16px 24px 8px; }
   .panel h3 .count { font: 500 1rem var(--sans); color: var(--ink-2); }
@@ -366,6 +369,11 @@
       <div class="filter-bar" id="filter-bar" hidden>
         <label for="filter-input" class="vh">Filter issues by keyword</label>
         <input type="search" id="filter-input" placeholder="Filter issues by rule, tag or selector...">
+        <div class="filter-pills" role="radiogroup" aria-label="Filter status">
+          <button type="button" class="pill active" data-filter="all" aria-checked="true" role="radio">All</button>
+          <button type="button" class="pill" data-filter="proven" aria-checked="false" role="radio">Fixed</button>
+          <button type="button" class="pill" data-filter="person" aria-checked="false" role="radio">Needs person</button>
+        </div>
         <span id="filter-count" class="filter-count" role="status" aria-live="polite"></span>
       </div>
 
@@ -625,17 +633,30 @@ $("recent-list").onclick = e => {
   $("f").requestSubmit();
 };
 
-$("filter-input").oninput = () => {
+let currentFilter = "all";
+document.querySelectorAll(".pill").forEach(p => {
+  p.onclick = () => {
+    document.querySelectorAll(".pill").forEach(x => { x.classList.remove("active"); x.setAttribute("aria-checked", "false"); });
+    p.classList.add("active");
+    p.setAttribute("aria-checked", "true");
+    currentFilter = p.dataset.filter;
+    applyFilters();
+  };
+});
+function applyFilters() {
   const q = $("filter-input").value.toLowerCase().trim();
   let matchCount = 0;
+  $("proven").closest(".panel").hidden = currentFilter === "person";
+  $("person").closest(".panel").hidden = currentFilter === "proven";
   document.querySelectorAll(".list li").forEach(li => {
     const text = li.textContent.toLowerCase();
-    const match = !q || text.includes(q);
-    li.hidden = !match;
-    if (match) matchCount++;
+    const matchText = !q || text.includes(q);
+    li.hidden = !matchText;
+    if (matchText && !li.closest(".panel").hidden) matchCount++;
   });
-  $("filter-count").textContent = q ? `${matchCount} visible` : "";
-};
+  $("filter-count").textContent = (q || currentFilter !== "all") ? `${matchCount} visible` : "";
+}
+$("filter-input").oninput = applyFilters;
 
 window.addEventListener("scroll", () => {
   $("btn-top").hidden = window.scrollY < 400;

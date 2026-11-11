@@ -151,6 +151,9 @@
   .pill.active { background: var(--char); color: #fff; border-color: var(--char); }
   .filter-count { font-size: .88rem; color: var(--ink-2); font-weight: 500; }
   .panel h3 { font: 400 1.35rem var(--serif); margin: 16px 24px 8px; }
+  .panel-header { display: flex; justify-content: space-between; align-items: center; padding-right: 24px; }
+  .btn-toggle { border: 0; background: none; font: 500 .88rem var(--sans); color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .btn-toggle:hover { color: var(--ink); }
   .panel h3 .count { font: 500 1rem var(--sans); color: var(--ink-2); }
   .list { list-style: none; margin: 0; padding: 0; }
   .list li { display: grid; grid-template-columns: 1.3fr 1fr; gap: 4px 24px; padding: 14px 24px; border-top: 1px solid var(--line); transition: background-color .15s ease; }
@@ -390,24 +393,29 @@
         <ul class="list failed" id="failed" aria-labelledby="h-failed"></ul>
       </div>
       <div class="panel">
-        <h3>What a screen reader hears</h3>
-        <div class="reader">
-          <div>
-            <div class="reader-head">
-              <p>Before</p>
-              <button type="button" class="btn ghost btn-sm" id="speak-b" aria-label="Listen to screen reader announcement before fixing">Listen</button>
-            </div>
-            <pre id="rb" tabindex="0" aria-label="Screen reader view before fixing"></pre>
-          </div>
-          <div>
-            <div class="reader-head">
-              <p>After, changed lines highlighted</p>
-              <button type="button" class="btn ghost btn-sm" id="speak-a" aria-label="Listen to screen reader announcement after fixing">Listen</button>
-            </div>
-            <pre id="ra" tabindex="0" aria-label="Screen reader view after fixing"></pre>
-          </div>
+        <div class="panel-header">
+          <h3>What a screen reader hears</h3>
+          <button type="button" class="btn-toggle" id="toggle-reader" aria-expanded="true" aria-controls="reader-body">Collapse transcript</button>
         </div>
-        <p class="ai" id="ai"></p>
+        <div id="reader-body">
+          <div class="reader">
+            <div>
+              <div class="reader-head">
+                <p>Before</p>
+                <button type="button" class="btn ghost btn-sm" id="speak-b" aria-label="Listen to screen reader announcement before fixing">Listen</button>
+              </div>
+              <pre id="rb" tabindex="0" aria-label="Screen reader view before fixing"></pre>
+            </div>
+            <div>
+              <div class="reader-head">
+                <p>After, changed lines highlighted</p>
+                <button type="button" class="btn ghost btn-sm" id="speak-a" aria-label="Listen to screen reader announcement after fixing">Listen</button>
+              </div>
+              <pre id="ra" tabindex="0" aria-label="Screen reader view after fixing"></pre>
+            </div>
+          </div>
+          <p class="ai" id="ai"></p>
+        </div>
       </div>
     </div>
   </section>
@@ -662,6 +670,13 @@ window.addEventListener("scroll", () => {
   $("btn-top").hidden = window.scrollY < 400;
 });
 $("btn-top").onclick = () => window.scrollTo({top: 0, behavior: "smooth"});
+
+$("toggle-reader").onclick = () => {
+  const isHidden = $("reader-body").hidden;
+  $("reader-body").hidden = !isHidden;
+  $("toggle-reader").setAttribute("aria-expanded", isHidden);
+  $("toggle-reader").textContent = isHidden ? "Collapse transcript" : "Expand transcript";
+};
 
 $("f").onsubmit = async e => {
   e.preventDefault();

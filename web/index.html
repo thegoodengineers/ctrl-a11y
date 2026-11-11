@@ -135,13 +135,16 @@
   .panel h3 { font: 400 1.35rem var(--serif); margin: 16px 24px 8px; }
   .panel h3 .count { font: 500 1rem var(--sans); color: var(--ink-2); }
   .list { list-style: none; margin: 0; padding: 0; }
-  .list li { display: grid; grid-template-columns: 1.3fr 1fr; gap: 4px 24px; padding: 14px 24px; border-top: 1px solid var(--line); }
+  .list li { display: grid; grid-template-columns: 1.3fr 1fr; gap: 4px 24px; padding: 14px 24px; border-top: 1px solid var(--line); transition: background-color .15s ease; }
+  .list li:hover { background: #fbfcfd; }
   .list .what { font-weight: 600; }
   .list .did { color: var(--ink); }
-  .list code { grid-column: 1 / -1; font: .82rem var(--mono); color: var(--ink-2); word-break: break-all; }
+  .list code { grid-column: 1 / -1; font: .82rem var(--mono); color: var(--ink-2); word-break: break-all; background: #f5f6f8; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--line); margin-top: 4px; }
   .meta { display: block; font-weight: 400; font-size: .88rem; color: var(--ink-2); margin-top: 2px; }
   .meta a { color: var(--ink-2); }
   .sev-critical, .sev-serious { color: #a3221a; font-weight: 600; }
+  .sev-moderate { color: #8a5700; font-weight: 600; }
+  .sev-minor { color: #555b66; font-weight: 500; }
   .proven .did::before { content: "Fixed: "; color: var(--proven); font-weight: 700; }
   .person .did::before { content: "Why: "; color: var(--person); font-weight: 700; }
   .failed .did::before { content: "Not kept: "; color: #a3221a; font-weight: 700; }
@@ -158,6 +161,7 @@
   .site-table { padding: 0 24px 20px; overflow-x: auto; }
   .site-table table { border-collapse: collapse; width: 100%; font-size: .95rem; }
   .site-table th, .site-table td { text-align: left; padding: 8px 10px; border-top: 1px solid var(--line); }
+  .site-table tbody tr:hover { background: #fbfcfd; }
   .site-table td:not(:first-child), .site-table tfoot td { font-variant-numeric: tabular-nums; }
   .site-table td:first-child { word-break: break-all; }
   .site-table tfoot th, .site-table tfoot td { font-weight: 700; border-top: 2px solid var(--char); }

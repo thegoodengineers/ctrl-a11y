@@ -200,6 +200,16 @@
   .shortcuts-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
   .shortcuts-list kbd { background: var(--soft); color: var(--ink); border: 1px solid var(--line); }
 
+  /* High contrast theme */
+  body.hc { --page: #050505; --ink: #ffffff; --ink-2: #e2e8f0; --soft: #121417; --line: #4a5568; --char: #1f242c; --proven: #10b981; --person: #f59e0b; --glow: #fef08a; }
+  body.hc .hero { background: #000 !important; border: 2px solid #fff; }
+  body.hc .panel, body.hc dialog, body.hc .userbox { background: #121417; border-color: #4a5568; }
+  body.hc form { background: #1f242c; border: 2px solid #fff; }
+  body.hc input[type=url] { color: #fff; }
+  body.hc input[type=url]::placeholder { color: #cbd5e1; }
+  body.hc .btn.light { background: #fff; color: #000; }
+  body.hc .filter-bar input[type=search] { background: #1f242c; color: #fff; border-color: #4a5568; }
+
   footer { margin-top: 72px; padding-block: 36px 48px; border-top: 1px solid var(--line); color: var(--ink-2); font-size: .95rem; }
   footer p { max-width: 62ch; margin: 0 0 8px; }
 
@@ -222,6 +232,7 @@
 <header class="wrap top">
   <div class="brand"><span class="mark" aria-hidden="true">A11y</span>Ctrl+A11y</div>
   <div class="top-actions">
+    <button type="button" class="btn ghost btn-sm" id="btn-theme" aria-pressed="false">High contrast</button>
     <button type="button" class="btn ghost btn-sm" id="btn-shortcuts" aria-haspopup="dialog">Shortcuts (<kbd>?</kbd>)</button>
     <a class="btn" href="https://github.com/thegoodengineers/ctrl-a11y">Source code</a>
   </div>
@@ -471,6 +482,11 @@ document.addEventListener("paste", e => {
 });
 
 $("site-btn").onclick = checkSite;
+$("btn-theme").onclick = () => {
+  const isHc = document.body.classList.toggle("hc");
+  $("btn-theme").setAttribute("aria-pressed", isHc);
+  $("btn-theme").textContent = isHc ? "Standard contrast" : "High contrast";
+};
 $("btn-shortcuts").onclick = () => $("dlg-shortcuts").showModal();
 $("dlg-close").onclick = () => $("dlg-shortcuts").close();
 document.addEventListener("keydown", e => {

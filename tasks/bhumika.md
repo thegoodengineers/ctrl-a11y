@@ -22,6 +22,14 @@ Branch: `bhumika/<task>` → pull request into `main`. Run `python -m pytest -q`
 - Enhanced screen-reader before/after comparison with changed lines highlighted via `<mark>`.
 - Added "How it works" 3-step pipeline strip (Audit → Fix → Re-check) directly under the address form.
 - Added one-click script tag copy with accessible clipboard status feedback.
+- Added one-click Markdown summary export for direct embedding in GitHub pull requests and issues.
+- Integrated Web Speech API audio synthesis to allow developers to listen to screen reader announcements.
+- Added live search filter and status pill filters ("All", "Fixed", "Needs person") for problem lists.
+- Added high-contrast theme toggle button for low-vision accessibility.
+- Added recent checks history tray with localStorage persistence and quick replay.
+- Added resolution percentage badge and developer time savings estimation metric in score card.
+- Added keyboard shortcuts dialog (`?` key) with full modal accessibility.
+- Added floating back-to-top button and collapsible toggle for screen reader transcripts.
 - Styled severity tags (critical, serious, moderate, minor), code target chips, and interactive table row hover states.
 - Added clean print media stylesheet for physical report prints and browser PDF export.
 - Fully responsive across desktop (1280px), tablet (768px), and mobile (375px) with zero horizontal overflow.

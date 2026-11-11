@@ -21,6 +21,9 @@ Branch: `bhumika/<task>` → pull request into `main`. Run `python -m pytest -q`
 - Grouped fixes table: "Fixed and proven" first, then "Needs a person", with count badges in headers.
 - Enhanced screen-reader before/after comparison with changed lines highlighted via `<mark>`.
 - Added "How it works" 3-step pipeline strip (Audit → Fix → Re-check) directly under the address form.
+- Added one-click script tag copy with accessible clipboard status feedback.
+- Styled severity tags (critical, serious, moderate, minor), code target chips, and interactive table row hover states.
+- Added clean print media stylesheet for physical report prints and browser PDF export.
 - Fully responsive across desktop (1280px), tablet (768px), and mobile (375px) with zero horizontal overflow.
 
 ## 2. ✅ DONE: Our own page must pass our own check

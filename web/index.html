@@ -280,7 +280,9 @@
           <div class="ship-actions">
             <a class="btn light" id="dljs" href="#" download="ctrl-a11y-fixes.js">Download the fix script</a>
             <button type="button" class="btn light" id="copyscript">Copy script tag</button>
+            <button type="button" class="btn light" id="copymd">Copy Markdown report</button>
             <span id="scriptcopied" role="status" aria-live="polite" class="vh"></span>
+            <span id="mdcopied" role="status" aria-live="polite" class="vh"></span>
           </div>
           <a class="alt" id="dl" href="#">Download the fixed page instead</a>
           <a class="alt" id="report" href="#" download="accessibility-report.html">Download the report</a>
@@ -375,6 +377,31 @@ $("copyscript").onclick = async () => {
     setTimeout(() => { $("copyscript").textContent = "Copy script tag"; $("scriptcopied").textContent = ""; }, 2500);
   } catch (e) {
     $("copyscript").textContent = "Press Ctrl+C to copy";
+  }
+};
+function markdownReport(r) {
+  let md = "## Accessibility Report: " + r.url + "\n\n" +
+    "- **Problems before:** " + r.before + "\n" +
+    "- **Proven fixes:** " + r.verified + "\n" +
+    "- **Remaining:** " + r.after + "\n" +
+    "- **New problems:** " + r.new_problems.length + "\n\n" +
+    "| Status | Problem | WCAG | Element | What was done |\n" +
+    "| --- | --- | --- | --- | --- |\n";
+  r.fixes.forEach(f => {
+    const wcag = (f.wcag && f.wcag.length) ? f.wcag.join(", ") : "Best practice";
+    md += "| " + f.status + " | " + f.help + " | " + wcag + " | `" + (f.fix_target || f.target).replace(/`/g, "") + "` | " + plain(f).replace(/\|/g, "\\|") + " |\n";
+  });
+  return md;
+}
+$("copymd").onclick = async () => {
+  if (!lastResult) return;
+  try {
+    await navigator.clipboard.writeText(markdownReport(lastResult));
+    $("copymd").textContent = "Copied!";
+    $("mdcopied").textContent = "Markdown summary copied to clipboard";
+    setTimeout(() => { $("copymd").textContent = "Copy Markdown report"; $("mdcopied").textContent = ""; }, 2500);
+  } catch (e) {
+    $("copymd").textContent = "Copy failed";
   }
 };
 

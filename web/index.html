@@ -68,6 +68,10 @@
   .strip .arrow { color: #8e939c; font-size: .95rem; }
   @media (max-width: 480px) { .strip { flex-wrap: wrap; gap: 6px 10px; } }
   .under { position: relative; z-index: 2; margin: 14px 0 0; color: #e9eaec; font-size: .95rem; }
+  .recent { position: relative; z-index: 2; display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: .88rem; color: #d4d6d9; flex-wrap: wrap; }
+  .recent-list { display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap; }
+  .recent-btn { border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); color: #fff; padding: 2px 10px; border-radius: 999px; font-size: .82rem; cursor: pointer; }
+  .recent-btn:hover { background: rgba(255,255,255,.2); }
   .linkish { border: 0; background: none; padding: 0; color: #fff; text-decoration: underline; text-underline-offset: 3px; font: inherit; cursor: pointer; }
   kbd { font: 500 .8em var(--mono); background: rgba(255,255,255,.15); border-radius: 5px; padding: 1px 6px; }
   #msg { position: relative; z-index: 2; margin: 18px 0 0; font-weight: 600; min-height: 1.6em; }
@@ -246,6 +250,7 @@
       </ol>
       <p class="under">Copied an address? Press <kbd>Ctrl</kbd> + <kbd>V</kbd> anywhere on this page and the check starts. No page handy?
         <button type="button" class="linkish" id="demo">Try our deliberately broken demo page</button>.</p>
+      <div id="recent-wrap" hidden class="recent"><span class="recent-lbl">Recent checks:</span> <ul id="recent-list" class="recent-list"></ul></div>
       <p id="msg" role="status" aria-live="polite"></p>
       <div class="bar" id="bar" hidden><i></i></div>
     </section>
@@ -554,6 +559,35 @@ function speak(text) {
 $("speak-b").onclick = () => speak($("rb").textContent);
 $("speak-a").onclick = () => speak($("ra").textContent);
 
+function loadRecent() {
+  try {
+    const list = JSON.parse(localStorage.getItem("ctrl_a11y_recent") || "[]");
+    if (!list.length) { $("recent-wrap").hidden = true; return; }
+    $("recent-list").innerHTML = list.map(u => {
+      let host = u;
+      try { host = new URL(u).hostname; } catch (e) {}
+      return `<li><button type="button" class="recent-btn" data-url="${esc(u)}" title="${esc(u)}">${esc(host)}</button></li>`;
+    }).join("");
+    $("recent-wrap").hidden = false;
+  } catch (e) {}
+}
+function saveRecent(u) {
+  try {
+    let list = JSON.parse(localStorage.getItem("ctrl_a11y_recent") || "[]");
+    list = [u, ...list.filter(x => x !== u)].slice(0, 4);
+    localStorage.setItem("ctrl_a11y_recent", JSON.stringify(list));
+    loadRecent();
+  } catch (e) {}
+}
+loadRecent();
+$("recent-list").onclick = e => {
+  const btn = e.target.closest("button[data-url]");
+  if (!btn) return;
+  $("url").value = btn.dataset.url;
+  $("clear-url").hidden = false;
+  $("f").requestSubmit();
+};
+
 $("f").onsubmit = async e => {
   e.preventDefault();
   $("go").disabled = true; $("out").hidden = true; $("bar").hidden = false;
@@ -572,6 +606,7 @@ $("f").onsubmit = async e => {
     $("dljs").href = URL.createObjectURL(new Blob([r.fix_script], {type: "text/javascript"}));
     $("dl").href = "/api/patched/" + r.patched_id;
     lastResult = r;
+    saveRecent(r.url);
     $("sb").src = r.shot_before || ""; $("sa").src = r.shot_after || "";
     siteLinks = r.site_links || [];
     $("site-wrap").hidden = siteLinks.length === 0;

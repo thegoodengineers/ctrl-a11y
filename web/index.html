@@ -526,6 +526,7 @@ $("f").onsubmit = async e => {
     siteTotals = {found: r.before, proven: r.verified, left: r.after};
     addSiteRow(r.url, r.before, r.verified, r.after);
     $("report").href = URL.createObjectURL(new Blob([reportHtml(r)], {type: "text/html"}));
+    try { $("report").download = `accessibility-report-${new URL(r.url).hostname.replace(/[^a-z0-9]/gi, "-")}.html`; } catch (e) {}
     $("proven").innerHTML = items(proven) || "<li>No fixes this time.</li>";
     $("person").innerHTML = items(person) || "<li>Nothing left for a person.</li>";
     $("c-proven").textContent = `(${proven.length})`; $("c-person").textContent = `(${person.length})`;

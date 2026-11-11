@@ -161,6 +161,7 @@
   .list { list-style: none; margin: 0; padding: 0; }
   .list li { display: grid; grid-template-columns: 1.3fr 1fr; gap: 4px 24px; padding: 14px 24px; border-top: 1px solid var(--line); transition: background-color .15s ease; }
   .list li:hover { background: #fbfcfd; }
+  .list li.empty { color: var(--ink-2); font-style: italic; display: block; text-align: center; padding: 24px; }
   .list .what { font-weight: 600; }
   .list .did { color: var(--ink); }
   .list code { grid-column: 1 / -1; font: .82rem var(--mono); color: var(--ink-2); word-break: break-all; background: #f5f6f8; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--line); margin-top: 4px; }
@@ -716,8 +717,8 @@ $("f").onsubmit = async e => {
     addSiteRow(r.url, r.before, r.verified, r.after);
     $("report").href = URL.createObjectURL(new Blob([reportHtml(r)], {type: "text/html"}));
     try { $("report").download = `accessibility-report-${new URL(r.url).hostname.replace(/[^a-z0-9]/gi, "-")}.html`; } catch (e) {}
-    $("proven").innerHTML = items(proven) || "<li>No fixes this time.</li>";
-    $("person").innerHTML = items(person) || "<li>Nothing left for a person.</li>";
+    $("proven").innerHTML = items(proven) || "<li class=\"empty\">No fixes were needed for this page.</li>";
+    $("person").innerHTML = items(person) || "<li class=\"empty\">All detected issues were fixed and proven. Nothing left for manual review!</li>";
     $("c-proven").textContent = `(${proven.length})`; $("c-person").textContent = `(${person.length})`;
     $("failed-wrap").hidden = failed.length === 0;
     $("failed").innerHTML = items(failed); $("c-failed").textContent = `(${failed.length})`;

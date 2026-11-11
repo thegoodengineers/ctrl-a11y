@@ -57,6 +57,11 @@
   input[type=url]:focus-visible { outline: 2px solid var(--char); outline-offset: 0; }
   .go[disabled] { background: #5c5f66; cursor: progress; }
   @media (max-width: 560px) { form { flex-direction: column; } }
+  .strip { list-style: none; display: inline-flex; align-items: center; gap: 10px; margin: 14px 0 0; padding: 0; font-size: .92rem; color: #d4d6d9; }
+  .strip li { display: inline-flex; align-items: center; gap: 6px; }
+  .strip li span { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,.2); color: #fff; font: 600 .75rem var(--sans); }
+  .strip .arrow { color: #8e939c; font-size: .95rem; }
+  @media (max-width: 480px) { .strip { flex-wrap: wrap; gap: 6px 10px; } }
   .under { position: relative; z-index: 2; margin: 14px 0 0; color: #e9eaec; font-size: .95rem; }
   .linkish { border: 0; background: none; padding: 0; color: #fff; text-decoration: underline; text-underline-offset: 3px; font: inherit; cursor: pointer; }
   kbd { font: 500 .8em var(--mono); background: rgba(255,255,255,.15); border-radius: 5px; padding: 1px 6px; }
@@ -191,6 +196,13 @@
         <input id="url" type="url" required placeholder="Paste a page address" autocomplete="url">
         <button class="btn go" id="go" type="submit">Fix this page</button>
       </form>
+      <ol class="strip" aria-label="How it works in 3 steps">
+        <li><span>1</span> Audit</li>
+        <li aria-hidden="true" class="arrow">&rarr;</li>
+        <li><span>2</span> Fix</li>
+        <li aria-hidden="true" class="arrow">&rarr;</li>
+        <li><span>3</span> Re-check</li>
+      </ol>
       <p class="under">Copied an address? Press <kbd>Ctrl</kbd> + <kbd>V</kbd> anywhere on this page and the check starts. No page handy?
         <button type="button" class="linkish" id="demo">Try our deliberately broken demo page</button>.</p>
       <p id="msg" role="status" aria-live="polite"></p>
@@ -392,7 +404,7 @@ th{background:#f3f4f6}code{font-size:12px;word-break:break-all}</style></head><b
 }
 function highlightChanged(before, after) {
   const seen = new Set(before.split("\n"));
-  return after.split("\n").map(l => seen.has(l) ? esc(l) : `<mark>${esc(l)}</mark>`).join("\n");
+  return after.split("\n").map(l => (seen.has(l) || !l.trim()) ? esc(l) : `<mark>${esc(l)}</mark>`).join("\n");
 }
 
 $("f").onsubmit = async e => {

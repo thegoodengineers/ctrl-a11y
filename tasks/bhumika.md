@@ -15,32 +15,32 @@ Branch: `bhumika/<task>` → pull request into `main`. Run `python -m pytest -q`
 - CI now fails if our own page has any problem, so keep running `python a11y.py http://localhost:8765/ --no-ai`
   after every change. Review the new panels on a phone-width window, and take the Devpost screenshots of them.
 
-## 1. Polish the web app (by 10 Nov, 3:00 PM)
-- Status 9 Nov: the page now follows a calm premium-fintech look (team's choice): light serif headlines (Fraunces),
-  Manrope text, a big charcoal gradient hero panel with floating glass tiles, a centred statement, rounded step cards,
-  a big proven-fixes score card next to a charcoal "Ship the fixes" card. Checked at 1280, 768 and 375 px: landing and
-  results view both score 0 problems. Your job now: review it, improve anything that feels off, keep all views at 0.
-  The list below is what's still open.
-- Files: `web/index.html` (and `server.py` only if you need a new endpoint)
-- User Experience is 10% of the score. Ideas, in order of value:
-  1. A loading state while it runs (a progress line or spinner that respects reduced motion).
-  2. Group the table: "Fixed and proven" first, then "Needs a person", with counts in each heading.
-  3. Make the before/after screen-reader view easier to compare (highlight lines that changed).
-  4. A short "How it works" strip under the paste box: Audit → Fix → Re-check.
-- Keep it plain and readable: high contrast, big text, works at phone width with no sideways scrolling.
+## 1. ✅ DONE: Polish the web app
+- Calm premium-fintech design (Fraunces headlines, Manrope text, charcoal hero gradient with floating glass signature).
+- Added progress loading line respecting `prefers-reduced-motion`.
+- Grouped fixes table: "Fixed and proven" first, then "Needs a person", with count badges in headers.
+- Enhanced screen-reader before/after comparison with changed lines highlighted via `<mark>`.
+- Added "How it works" 3-step pipeline strip (Audit → Fix → Re-check) directly under the address form.
+- Fully responsive across desktop (1280px), tablet (768px), and mobile (375px) with zero horizontal overflow.
 
-## 2. Our own page must pass our own check (by 10 Nov, 3:00 PM)
-- Start the server: `python -m uvicorn server:app --port 8765`
-- Run: `python a11y.py http://localhost:8765/ --no-ai`
-- Status 9 Nov: it already reports **0 problems**. Keep it at 0 after your design changes.
-- Done when: it reports **0 problems** on our own page. Screenshot that result; it's a great line for the video.
+## 2. ✅ DONE: Our own page must pass our own check
+- Verified with `python a11y.py http://localhost:8765/ --no-ai --max-after 0`.
+- Scored **0 problems** consistently across landing and results views; integrated into GitHub Actions CI.
 
-## 3. Screenshots for Devpost (by 10 Nov, 8:00 PM)
-- 4-5 clean screenshots at 1440 px wide: paste box, result numbers, the fixes table, screen-reader before/after,
-  and our own page passing. Save them in `docs/screenshots/` and give them to Chirag.
+## 3. ✅ DONE: Screenshots for Devpost
+- Clean screenshots taken at 1440px wide and saved in `docs/screenshots/`:
+  - `01-paste-a-url.png` (hero and paste box)
+  - `02-result.png` (proven score card and ship panel)
+  - `03-fixed-and-proven.png` (proven fixes table with WCAG tags)
+  - `04-needs-a-person.png` (unfixed issues requiring human review)
+  - `05-screen-reader-before-after.png` (screen-reader speech before/after)
+  - `06-see-the-difference.png` (visual difference snapshots)
+  - `07-ship-the-fixes.png` (fix script and single-line deployment)
+  - `08-real-site-hacker-news.png` (real site check proof)
 
-## 4. Help Ayush with the video
-- Review the video script in `docs/DEVPOST.md` (Video plan) and record the screen parts with Ayush.
+## 4. ✅ DONE: Help Ayush with the video
+- Reviewed video script in `docs/DEVPOST.md` (Video plan) and coordinated screen recordings.
 
-## 5. Your line for "What we learned"
-- Add it under "What we learned" in `docs/DEVPOST.md`.
+## 5. ✅ DONE: Your line for "What we learned"
+- Added under "What we learned" in `docs/DEVPOST.md`:
+  *"Our own page had to pass first. Building to zero problems on our own check, in CI, kept us honest about what we asked other sites to do."*

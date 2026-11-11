@@ -143,6 +143,10 @@
   @media (max-width: 520px) { .ship .alt { display: block; margin: 14px 0 0; } }
 
   .panel { background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg); padding: 8px 0; margin-top: 16px; }
+  .filter-bar { display: flex; align-items: center; gap: 12px; margin: 16px 0 8px; }
+  .filter-bar input[type=search] { flex: 1; max-width: 28rem; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; font: inherit; font-size: .95rem; background: var(--soft); color: var(--ink); }
+  .filter-bar input[type=search]:focus-visible { outline: 2px solid var(--char); }
+  .filter-count { font-size: .88rem; color: var(--ink-2); font-weight: 500; }
   .panel h3 { font: 400 1.35rem var(--serif); margin: 16px 24px 8px; }
   .panel h3 .count { font: 500 1rem var(--sans); color: var(--ink-2); }
   .list { list-style: none; margin: 0; padding: 0; }
@@ -341,6 +345,12 @@
             <tfoot><tr><th scope="row">All pages checked</th><td id="t-found"></td><td id="t-proven"></td><td id="t-left"></td></tr></tfoot>
           </table>
         </div>
+      </div>
+
+      <div class="filter-bar" id="filter-bar" hidden>
+        <label for="filter-input" class="vh">Filter issues by keyword</label>
+        <input type="search" id="filter-input" placeholder="Filter issues by rule, tag or selector...">
+        <span id="filter-count" class="filter-count" role="status" aria-live="polite"></span>
       </div>
 
       <div class="panel">
@@ -593,6 +603,18 @@ $("recent-list").onclick = e => {
   $("f").requestSubmit();
 };
 
+$("filter-input").oninput = () => {
+  const q = $("filter-input").value.toLowerCase().trim();
+  let matchCount = 0;
+  document.querySelectorAll(".list li").forEach(li => {
+    const text = li.textContent.toLowerCase();
+    const match = !q || text.includes(q);
+    li.hidden = !match;
+    if (match) matchCount++;
+  });
+  $("filter-count").textContent = q ? `${matchCount} visible` : "";
+};
+
 $("f").onsubmit = async e => {
   e.preventDefault();
   $("go").disabled = true; $("out").hidden = true; $("bar").hidden = false;
@@ -633,6 +655,9 @@ $("f").onsubmit = async e => {
     $("ra").innerHTML = highlightChanged(r.reader_before, r.reader_after);
     $("ai").textContent = aiOn ? "Image and icon descriptions were written by a vision AI model and re-checked like every other fix."
                                : "Image and icon descriptions are off on this server, so images and icon-only buttons are listed for a person.";
+    $("filter-bar").hidden = (proven.length + person.length) === 0;
+    $("filter-input").value = "";
+    $("filter-count").textContent = "";
     $("out").hidden = false;
     $("msg").textContent = r.blocked
       ? `Warning: this site served a block or error page (HTTP ${r.http_status ?? "unknown"}) to our browser, so these results describe that page, not the real site.`

@@ -210,6 +210,11 @@
   body.hc .btn.light { background: #fff; color: #000; }
   body.hc .filter-bar input[type=search] { background: #1f242c; color: #fff; border-color: #4a5568; }
 
+  /* Back to top button */
+  .btn-top { position: fixed; bottom: 28px; right: 28px; width: 44px; height: 44px; border-radius: 50%; background: var(--char); color: #fff; border: 0; display: grid; place-items: center; font-size: 1.3rem; box-shadow: 0 10px 25px rgba(0,0,0,.25); cursor: pointer; z-index: 8; }
+  .btn-top:hover { background: #000; }
+  @media print { .btn-top { display: none !important; } }
+
   footer { margin-top: 72px; padding-block: 36px 48px; border-top: 1px solid var(--line); color: var(--ink-2); font-size: .95rem; }
   footer p { max-width: 62ch; margin: 0 0 8px; }
 
@@ -572,7 +577,8 @@ th{background:#f3f4f6}code{font-size:12px;word-break:break-all}</style></head><b
       <li><span><kbd>Tab</kbd></span> navigate between interactive elements</li>
     </ul>
   </div>
-</dialog></body></html>`;
+</dialog><button type="button" class="btn-top" id="btn-top" aria-label="Back to top" hidden>&uarr;</button>
+</body></html>`;
 }
 function highlightChanged(before, after) {
   const seen = new Set(before.split("\n"));
@@ -631,6 +637,11 @@ $("filter-input").oninput = () => {
   $("filter-count").textContent = q ? `${matchCount} visible` : "";
 };
 
+window.addEventListener("scroll", () => {
+  $("btn-top").hidden = window.scrollY < 400;
+});
+$("btn-top").onclick = () => window.scrollTo({top: 0, behavior: "smooth"});
+
 $("f").onsubmit = async e => {
   e.preventDefault();
   $("go").disabled = true; $("out").hidden = true; $("bar").hidden = false;
@@ -684,5 +695,6 @@ $("f").onsubmit = async e => {
   } finally { $("go").disabled = false; $("bar").hidden = true; }
 };
 </script>
+<button type="button" class="btn-top" id="btn-top" aria-label="Back to top" hidden>&uarr;</button>
 </body>
 </html>

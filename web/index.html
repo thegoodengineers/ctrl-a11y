@@ -167,7 +167,9 @@
   .site-table tfoot th, .site-table tfoot td { font-weight: 700; border-top: 2px solid var(--char); }
   .reader { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 4px 24px 20px; }
   @media (max-width: 760px) { .reader { grid-template-columns: 1fr; } }
-  .reader p { margin: 0 0 8px; font-weight: 600; }
+  .reader-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .reader p { margin: 0; font-weight: 600; }
+  .btn-sm { padding: 4px 10px; font-size: .8rem; border-radius: 6px; }
   .reader pre { margin: 0; background: var(--char); color: #eceef0; border-radius: var(--r-md); padding: 14px 16px; max-height: 360px; overflow: auto;
                 font: .82rem/1.55 var(--mono); white-space: pre-wrap; word-break: break-word; }
   .reader mark { background: var(--glow); color: var(--ink); border-radius: 3px; }
@@ -323,8 +325,20 @@
       <div class="panel">
         <h3>What a screen reader hears</h3>
         <div class="reader">
-          <div><p>Before</p><pre id="rb" tabindex="0" aria-label="Screen reader view before fixing"></pre></div>
-          <div><p>After, changed lines highlighted</p><pre id="ra" tabindex="0" aria-label="Screen reader view after fixing"></pre></div>
+          <div>
+            <div class="reader-head">
+              <p>Before</p>
+              <button type="button" class="btn ghost btn-sm" id="speak-b" aria-label="Listen to screen reader announcement before fixing">Listen</button>
+            </div>
+            <pre id="rb" tabindex="0" aria-label="Screen reader view before fixing"></pre>
+          </div>
+          <div>
+            <div class="reader-head">
+              <p>After, changed lines highlighted</p>
+              <button type="button" class="btn ghost btn-sm" id="speak-a" aria-label="Listen to screen reader announcement after fixing">Listen</button>
+            </div>
+            <pre id="ra" tabindex="0" aria-label="Screen reader view after fixing"></pre>
+          </div>
         </div>
         <p class="ai" id="ai"></p>
       </div>
@@ -439,6 +453,17 @@ function highlightChanged(before, after) {
   const seen = new Set(before.split("\n"));
   return after.split("\n").map(l => (seen.has(l) || !l.trim()) ? esc(l) : `<mark>${esc(l)}</mark>`).join("\n");
 }
+
+function speak(text) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  if (!text) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 1.0;
+  window.speechSynthesis.speak(u);
+}
+$("speak-b").onclick = () => speak($("rb").textContent);
+$("speak-a").onclick = () => speak($("ra").textContent);
 
 $("f").onsubmit = async e => {
   e.preventDefault();

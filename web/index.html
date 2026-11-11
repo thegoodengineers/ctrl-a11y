@@ -52,9 +52,12 @@
   .speech mark { background: var(--glow); color: var(--ink); border-radius: 4px; padding: 0 4px; }
 
   form { position: relative; z-index: 2; display: flex; gap: 8px; max-width: 40rem; background: #fff; padding: 8px; border-radius: 16px; box-shadow: 0 18px 40px rgba(0,0,0,.25); }
-  input[type=url] { flex: 1; min-width: 0; border: 0; padding: 12px 14px; font: 1.05rem var(--sans); color: var(--ink); background: transparent; border-radius: 10px; }
+  .field-wrap { position: relative; flex: 1; display: flex; align-items: center; min-width: 0; }
+  input[type=url] { width: 100%; min-width: 0; border: 0; padding: 12px 34px 12px 14px; font: 1.05rem var(--sans); color: var(--ink); background: transparent; border-radius: 10px; }
   input[type=url]::placeholder { color: #6a6f77; }
   input[type=url]:focus-visible { outline: 2px solid var(--char); outline-offset: 0; }
+  .clear-btn { position: absolute; right: 8px; border: 0; background: none; font-size: 1.3rem; line-height: 1; color: #8e939c; cursor: pointer; padding: 4px; border-radius: 50%; display: grid; place-items: center; width: 28px; height: 28px; }
+  .clear-btn:hover { color: var(--ink); background: #eef0f3; }
   .go[disabled] { background: #5c5f66; cursor: progress; }
   @media (max-width: 560px) { form { flex-direction: column; } }
   .strip { list-style: none; display: inline-flex; align-items: center; gap: 10px; margin: 14px 0 0; padding: 0; font-size: .92rem; color: #d4d6d9; }
@@ -213,7 +216,10 @@
       </ul>
       <form id="f">
         <label class="vh" for="url">Address of the page to fix</label>
-        <input id="url" type="url" required placeholder="Paste a page address" autocomplete="url">
+        <div class="field-wrap">
+          <input id="url" type="url" required placeholder="Paste a page address" autocomplete="url">
+          <button type="button" class="clear-btn" id="clear-url" aria-label="Clear address" hidden>&times;</button>
+        </div>
         <button class="btn go" id="go" type="submit">Fix this page</button>
       </form>
       <ol class="strip" aria-label="How it works in 3 steps">
@@ -415,7 +421,9 @@ document.addEventListener("paste", e => {
 });
 
 $("site-btn").onclick = checkSite;
-$("demo").onclick = () => { $("url").value = location.origin + "/demo/broken.html"; $("f").requestSubmit(); };
+$("demo").onclick = () => { $("url").value = location.origin + "/demo/broken.html"; $("clear-url").hidden = false; $("f").requestSubmit(); };
+$("url").oninput = () => { $("clear-url").hidden = !$("url").value; };
+$("clear-url").onclick = () => { $("url").value = ""; $("clear-url").hidden = true; $("url").focus(); };
 
 const SAID = {
   "style.color": v => `Text colour changed to ${v}`, "aria-label": v => `Name added: "${v}"`,

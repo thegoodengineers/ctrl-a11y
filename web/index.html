@@ -175,6 +175,19 @@
 
   footer { margin-top: 72px; padding-block: 36px 48px; border-top: 1px solid var(--line); color: var(--ink-2); font-size: .95rem; }
   footer p { max-width: 62ch; margin: 0 0 8px; }
+
+  /* Print styles for export and reporting */
+  @media print {
+    body { background: #fff; color: #000; font-size: 12pt; }
+    .top .btn, .skip, .glass, .bar, .user, #demo, .ship, .site-go, #copyscript { display: none !important; }
+    .hero { background: none !important; color: #000 !important; border: 1px solid #ccc; padding: 24px; border-radius: 8px; }
+    .hero h1, .hero .lede, .hero .under, .strip { color: #000 !important; }
+    .hero form { box-shadow: none; border: 1px solid #ccc; }
+    .panel { border: 1px solid #ccc; break-inside: avoid; margin-top: 12px; }
+    .list li { break-inside: avoid; border-top-color: #ddd; }
+    .reader pre { background: #f5f6f8; color: #000; border: 1px solid #ccc; }
+    footer { border-top-color: #ccc; margin-top: 24px; padding-block: 16px; }
+  }
 </style>
 </head>
 <body>
